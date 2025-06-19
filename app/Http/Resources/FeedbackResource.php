@@ -18,6 +18,8 @@ class FeedbackResource extends JsonResource
         return [
             'fb_id' => $this->fb_id,
             'emp_id' => $this-> emp_id,
+            'emp_name' => $this->employee->name ?? null,
+            'emp_email' => $this->employee->email ?? null,
             'text' => $this->text,
             'rating' => $this-> rating,
             'updated_at' => Carbon::parse($this->updated_at)->Format('Y-m-d H:i:s '),

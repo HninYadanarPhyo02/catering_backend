@@ -14,6 +14,13 @@ class ProfileController extends Controller
     /**
      * Display the user's profile form.
      */
+    public function show()
+    {
+        $admin = Auth::user(); // Assuming you're using default Laravel auth
+
+        return view('admin.profile', compact('admin'));
+    }
+    
     public function edit(Request $request): View
     {
         return view('profile.edit', [

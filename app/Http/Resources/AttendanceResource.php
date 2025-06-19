@@ -15,11 +15,23 @@ class AttendanceResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        // return [
+        //     'id' => $this->id,
+        //     'emp_id' => $this->emp_id,
+        //     'status' => $this->status,
+        //     'check_out' => $this->check_out,
+        //     'date' => $this->date,
+        //     'created_at' => Carbon::parse($this->created_at)->format('Y-m-d H:i:s '),
+        // ];
         return [
-            'id' => $this->id,
-            'emp_id' => $this->emp_id,
-            'date' => $this->date,
-            'created_at' => Carbon::parse($this->created_at)->format('Y-m-d H:i:s '),
-        ];
+        'emp_id'     => $this->emp_id,
+        'emp_name'   => optional($this->employee)->name,
+        'date'       => $this->date,
+        'food_name'  => optional($this->foodmonthprice)->food_name,
+        'price'      => optional($this->foodmonthprice)->price,
+        'total'      => optional($this->foodmonthprice)->price,
+        'status'     => $this->status,
+        'check_out'  => $this->check_out,
+    ];
     }
 }

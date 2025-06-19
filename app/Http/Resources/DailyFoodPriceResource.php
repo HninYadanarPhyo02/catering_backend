@@ -18,6 +18,7 @@ class DailyFoodPriceResource extends JsonResource
         return [
             'id' => $this->id,
             'date' => $this->date,
+            'food_id' => $this->food_id,
             'food_name' => $this->food_name,
             'price' => $this->price,
             'created_at' => Carbon::parse($this->created_at)->format('Y-m-d H:i:s '),

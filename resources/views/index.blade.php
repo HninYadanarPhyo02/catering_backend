@@ -1,8 +1,8 @@
-@extends('layouts.app')
+<!-- @extends('layouts.app')
 
 @section('content')
     <div class="container-fluid">
-        <h3 class="mb-4">Catering Management System</h3>
+        <h class="mb-4">Catering Management System</h>
 
         <div class="row g-4">
             <div class="col-md-4">
@@ -31,4 +31,4 @@
             </div>
         </div>
     </div>
-@endsection
+@endsection -->

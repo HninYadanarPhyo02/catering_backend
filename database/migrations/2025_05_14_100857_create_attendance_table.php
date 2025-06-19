@@ -15,6 +15,8 @@ return new class extends Migration
            $table->id('id');
            $table->string('emp_id');
            $table->date('date');
+           $table->string('status');
+           $table->boolean('check_out')->default(false);
            $table->timestamps();
         });
     }

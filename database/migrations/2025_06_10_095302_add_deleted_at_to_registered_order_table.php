@@ -9,19 +9,21 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
-        Schema::create('holiday', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        Schema::table('registered_order', function (Blueprint $table) {
+            $table->softDeletes();
         });
     }
+
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('holiday');
+        Schema::table('registered_order', function (Blueprint $table) {
+            //
+        });
     }
 };

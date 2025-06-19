@@ -37,21 +37,57 @@ return [
     |
     */
 
+    // 'guards' => [
+    //     'web' => [
+    //         'driver' => 'session',
+    //         'provider' => 'users',
+    //     ],
+    //     'sanctum' => [
+    //         'driver' => 'eloquent',
+    //         'model' => App\Models\Employee::class
+    //     ],
+    //     'api' => [
+    //     'driver' => 'sanctum',
+    //     'provider' => 'users', // or 'employees' if you're using a custom provider
+    // ]
+    // ],
+
+    'guards' => [
+        'employee' => [
+            'driver' => 'sanctum', // or passport, or token
+            'provider' => 'employee',
+        ],
+    ],
     'guards' => [
         'web' => [
             'driver' => 'session',
             'provider' => 'users',
+            // 'provider' => 'employee',
         ],
-        'sanctum' => [
-            'driver' => 'eloquent',
-            'model' => App\Models\Employee::class
-        ],
+
         'api' => [
-        'driver' => 'sanctum',
-        'provider' => 'users', // or 'employees' if you're using a custom provider
-    ]
+            'driver' => 'sanctum',
+            'provider' => 'employee',
+        ],
     ],
 
+    'providers' => [
+        'users' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Employee::class,
+        ],
+        'employee' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Employee::class,
+        ],
+    ],
+    'providers' => [
+        'users' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Employee::class,
+        ],
+        // ...
+    ],
     /*
     |--------------------------------------------------------------------------
     | User Providers
@@ -72,19 +108,19 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', App\Models\Employee::class),
+            'model' => env('AUTH_MODEL', App\Models\Employee::class)
         ],
 
         'employees' => [
             'driver' => 'eloquent',
             'model' => App\Models\Employee::class
-        ]
-
+        ],
         // 'users' => [
         //     'driver' => 'database',
         //     'table' => 'users',
         // ],
     ],
+
 
     /*
     |--------------------------------------------------------------------------

@@ -1,0 +1,13 @@
+[90m= [39m[34;4mApp\Models\Employee[39;24m {#6337
+    [34mid[39m: "[32m09b46a43-b1b9-44db-b27c-c7ea36bb49dc[39m",
+    [34memp_id[39m: "[32memp_0002[39m",
+    [34mname[39m: "[32mHnin Yadanar Phyo[39m",
+    [34memail[39m: "[32mhninyadanarphyo@gmail.com[39m",
+    [34memail_verified_at[39m: [36mnull[39m,
+    #[33mpassword[39m: "[32m$2y$12$k5bMXiKtModiZcG53cx/SemaGPR0MOi6/1nP.Ocmu4u45.qU1ZDRe[39m",
+    [34mrole[39m: "[32memployee[39m",
+    #[33mremember_token[39m: [36mnull[39m,
+    [34mcreated_at[39m: [36mnull[39m,
+    [34mupdated_at[39m: [36mnull[39m,
+  }
+

@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\FoodMenu;
 use Illuminate\Http\Request;
+use PhpOffice\PhpSpreadsheet\Reader\Xml\Style\Font;
 
 class MenuController extends Controller
 {
@@ -11,54 +13,67 @@ class MenuController extends Controller
      */
     public function index()
     {
-        //
+        // $menus = FoodMenu::all();
+         $menus = FoodMenu::orderBy('created_at', 'desc')->paginate(5);
+        return view('menus.index', compact('menus'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
+    // public function store(Request $request)
+    // {
+    //     $request->validate(['name' => 'required|string|max:255']);
+    //     FoodMenu::create($request->only('name'));
+    //     return redirect()->route('menus.index')->with('success', 'Menu added!');
+    // }
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name' => 'required|string',
+        ]);
+
+        $existingFood = FoodMenu::whereRaw('LOWER(name) = ?', [strtolower($request->name)])->first();
+
+        if ($existingFood) {
+            // Redirect back with input and flash error message
+            return redirect()->back()->with('error', 'This curry is already existed');
+        }
+
+        // Generate new food_id logic here...
+        $lastMenu = FoodMenu::orderByRaw("CAST(SUBSTRING(food_id, 6) AS UNSIGNED) DESC")->first();
+        $lastNumber = $lastMenu ? intval(substr($lastMenu->food_id, 5)) : 0;
+        $newNumber = $lastNumber + 1;
+        $newFoodId = 'food_' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+
+        // Create new food menu item
+        FoodMenu::create([
+            'food_id' => $newFoodId,
+            'name' => $request->name,
+        ]);
+
+        return redirect()->route('menus.index')->with('success', "$request->name is added!");
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+
+
+
+    public function edit(FoodMenu $menu)
     {
-        //
+        $menus = FoodMenu::all();
+        return view('menus.index', compact('menus'))->with('editMenu', $menu);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function update(Request $request, FoodMenu $menu)
     {
-        //
+        $request->validate(['name' => 'required|string|max:255']);
+        $menu->update($request->only('name'));
+        $id = $menu->food_id;
+        return redirect()->route('menus.index')->with('success', "$id is updated!");
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
+    public function destroy(FoodMenu $menu)
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
     {
-        //
+        $name = $menu->name;
+        $menu->delete();
+        return redirect()->route('menus.index')->with('success', "$name is deleted!");
     }
 }

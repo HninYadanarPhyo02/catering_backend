@@ -19,6 +19,7 @@ class AnnouncementResource extends JsonResource
             'id' => $this->id,
             'date' => $this->date,
             'text' => $this->text,
+            'title' => $this->title,
             'created_at' => Carbon::parse($this->created_at)->format('Y-m-d H:i:s'),
         ];
     }

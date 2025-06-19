@@ -9,8 +9,16 @@ use Maatwebsite\Excel\Excel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
+use function Pest\Laravel\json;
+
 class AuthController extends Controller
 {
+    public function me(Request $request){
+        $user = $request->user();
+        return response()->json([
+            'data' => $user->emp_id,
+        ]);
+    }
     public function login(Request $request)
     {
         $request->validate([
@@ -27,7 +35,9 @@ class AuthController extends Controller
             ], 401);
         }
 
-        $token = $user->createToken('employee-token')->plainTextToken;
+        $role = $user->role;
+        $newAccessToken = $user->createToken("{$role}-auth-token");
+        $token = $newAccessToken->plainTextToken;
 
         return response()->json([
             'isSuccess' => true,
@@ -40,6 +50,7 @@ class AuthController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'role' => $user->role,
+                    'deleted_at' => null,
                 ],
             ],
         ]);

@@ -24,35 +24,88 @@ class FoodController extends Controller
         // return response()->json(FoodMenu::all());
 
     }
+    // public function store(Request $request)
+    // {
+
+        
+    //     $lastmenu = FoodMenu::orderByRaw("CAST(SUBSTRING(food_id, 6) AS UNSIGNED) DESC")->first();
+
+    //     $lastNumber = $lastmenu ? intval(substr($lastmenu->food_id, 5)) : 0; // Note: substr start at 5 (0-based index)
+
+    //     $newNumber = $lastNumber + 1;
+
+    //     $newfoodId = 'food_' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+
+    //     // Check if 'name' is empty
+    //     if (!$request->name || trim($request->name) === '') {
+    //         return response()->json([
+    //             'isSuccess' => false,
+    //             'message' => 'Food name is empty, please add'
+    //         ], 404);
+    //     }
+
+    //      $food = FoodMenu::firstOrCreate(
+    //         ['name' => $request->name],
+    //         ['food_id' => $newfoodId]  // Assign UUID if creating new
+    //     );
+    //     // Check for duplicate food name (case-insensitive)
+    //     $exists = FoodMenu::where('name',$request->name)->exists();
+
+    //     if (!$exists) {
+    //         $food = FoodMenu::create([
+    //         'food_id' => $newfoodId,
+    //         'name' => $request->name,
+    //     ]);
+    //     return response()->json(['isSuccess' => true, 'message' => 'Food item created', 'data' => $food], 200);
+    //     }        
+    //     return response()->json([
+    //             'isSuccess' => false,
+    //             'message' => 'This curry already exists'
+    //         ], 404);
+    // }
+
     public function store(Request $request)
     {
-
-        // Check if 'name' is empty
         if (!$request->name || trim($request->name) === '') {
             return response()->json([
                 'isSuccess' => false,
                 'message' => 'Food name is empty, please add'
             ], 400);
         }
+        // raw query 
+        $existingFood = FoodMenu::whereRaw('LOWER(name) = ?', [strtolower($request->name)])->first();
 
-        // Check for duplicate food name (case-insensitive)
-        $exists = FoodMenu::findByName($request->name)->exists();
-
-        if ($exists) {
+        if ($existingFood) {
             return response()->json([
                 'isSuccess' => false,
                 'message' => 'This curry already exists'
             ], 409);
         }
+
+        $lastMenu = FoodMenu::orderByRaw("CAST(SUBSTRING(food_id, 6) AS UNSIGNED) DESC")->first();
+        $lastNumber = $lastMenu ? intval(substr($lastMenu->food_id, 5)) : 0;
+        $newNumber = $lastNumber + 1;
+        $newFoodId = 'food_' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+
+        // Create the new food item
         $food = FoodMenu::create([
+            'food_id' => $newFoodId,
             'name' => $request->name,
         ]);
-        return response()->json(['isSuccess' => true, 'message' => 'Food item created', 'data' => $food], 200);
+
+        return response()->json([
+            'isSuccess' => true,
+            'message' => 'Food item created',
+            'data' => $food
+        ], 200);
     }
+
     public function show($name)
     {
 
-        $data = FoodMenu::where('name', $name)->first();
+        // $data = FoodMenu::where('name', $name)->first();
+$data = FoodMenu::with('foodMonthPrices')->where('name', $name)->first();
+    //   dd($data);
 
         if ($data) {
             $data = new FoodResource($data);
@@ -100,7 +153,7 @@ class FoodController extends Controller
     #Delete a food item 
     public function destroy($food_name)
     {
-        $food = FoodMenu::findByName($food_name);
+        $food = FoodMenu::where('food_name',$food_name)->first();
         // $food = FoodMenu::where('name', $food_name)->first();
         if (!$food) {
             return response()->json(['message' => 'Food item not found'], 404);

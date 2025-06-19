@@ -12,11 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('foodmonthprice', function (Blueprint $table) {
-            $table->increments('id');
-            $table->date('date');
+            $table->id();
+            $table->string('food_id');
             $table->string('food_name');
+            $table->date('date');
             $table->decimal('price');
             $table->timestamps();
+
         });
     }
 

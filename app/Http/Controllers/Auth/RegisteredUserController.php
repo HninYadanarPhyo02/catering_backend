@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Employee;
+use App\Models\RegisteredOrder;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -49,7 +50,7 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role'=> $request->role ?? 'employee',
+            'role' => $request->role ?? 'employee',
         ]);
         // dd($user);
 
@@ -58,5 +59,17 @@ class RegisteredUserController extends Controller
         Auth::login($user);
 
         return redirect(route('dashboard', absolute: false));
+    }
+    public function list()
+    {
+        $data = Employee::get();
+        if ($data) {
+            $data = RegisteredOrder::collection($data);
+        }
+        return response([
+            'isSuccess' => true,
+            'message' => 'Success',
+            'data' => $data,
+        ], 200);
     }
 }

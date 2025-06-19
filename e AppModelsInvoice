@@ -1,0 +1,13 @@
+[90m= [39m[34;4mApp\Models\Invoice[39;24m {#6391
+    [34minvoice_number[39m: "[32ma4acd5d2-d354-4d49-b199-70699a32d494[39m",
+    [34mtotal_day[39m: [35m3[39m,
+    [34mcustomer_name[39m: "[32mTest Customer[39m",
+    [34morder_details[39m: "[32m[][39m",
+    [34mquantity[39m: [35m1[39m,
+    [34munit_price[39m: [33m100.0[39m,
+    [34mtotal[39m: [33m100.0[39m,
+    [34mpayment_status[39m: "[32munpaid[39m",
+    [34mupdated_at[39m: "[32m2025-06-11 03:58:14[39m",
+    [34mcreated_at[39m: "[32m2025-06-11 03:58:14[39m",
+  }
+

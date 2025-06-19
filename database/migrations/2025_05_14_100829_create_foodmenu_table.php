@@ -13,7 +13,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('foodmenu', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->id();
+            $table->string('food_id');
             $table->string('name')->unique();
             $table->timestamps();
         });

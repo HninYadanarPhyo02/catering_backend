@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('registered_order', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->integer('emp_id');
+            $table->string('emp_id');
             $table->date('date');
             $table->unique(['emp_id','date']);
         });
