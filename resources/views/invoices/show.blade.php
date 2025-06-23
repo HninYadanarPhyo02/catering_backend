@@ -32,23 +32,24 @@
                     </thead>
                     <tbody>
                         @foreach ($invoice->details as $detail)
-                            <tr>
-                                <td>{{ \Carbon\Carbon::parse($detail->date)->format('d M Y') }}</td>
-                                <td>{{ $detail->food_name }}</td>
-                                <td>${{ number_format($detail->price, 2) }}</td>
-                                <td>
-                                    <span class="badge bg-{{ $detail->status === 'Present' ? 'success' : 'secondary' }}">
-                                        {{ $detail->status }}
-                                    </span>
-                                </td>
-                                <td>
-                                    @if($detail->check_out)
-                                        <i class="fas fa-check text-success"></i>
-                                    @else
-                                        <i class="fas fa-times text-danger"></i>
-                                    @endif
-                                </td>
-                            </tr>
+                        <tr>
+                            <td>{{ \Carbon\Carbon::parse($detail->date)->format('d M Y') }}</td>
+                            <td>{{ $detail->food_name }}</td>
+                            <td>${{ number_format($detail->price, 2) }}</td>
+                            <td>
+                                <span class="badge bg-{{ strtolower($detail->status) === 'present' ? 'success' : 'secondary' }}">
+                                    {{ ucfirst($detail->status) }}
+                                </span>
+
+                            </td>
+                            <td>
+                                @if($detail->check_out)
+                                <i class="fas fa-check text-success"></i>
+                                @else
+                                <i class="fas fa-times text-danger"></i>
+                                @endif
+                            </td>
+                        </tr>
                         @endforeach
                     </tbody>
                 </table>

@@ -26,14 +26,14 @@ class Kernel extends HttpKernel
     ];
 
     protected $commands = [
-        SendMonthlyReports::class,
+        \App\Console\Commands\SendMonthlyReport::class,
     ];
 
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('invoice:send-monthly')
-            ->lastDayOfMonth('23:00'); // Sends on last day at 11PM
-    }
+        $schedule->command('send:monthly-invoices')->monthlyOn(30, '23:50');
+    } 
+
 
     /**
      * The application's global HTTP middleware stack.

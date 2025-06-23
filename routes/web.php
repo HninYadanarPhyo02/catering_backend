@@ -2,15 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Holiday;
+use App\Models\Invoice;
+use App\Models\InvoiceDetail;
 use App\Models\FoodMonthPrice;
+use App\Mail\MonthlyReportMail;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use App\Http\Controllers\Api\Auth\HolidayController;
+use App\Http\Controllers\Api\Auth\InvoiceController;
 use App\Http\Controllers\Api\Auth\FeedbackController;
-use App\Models\Holiday;
 
 // Default login page
 Route::get('/', function () {
@@ -23,7 +27,7 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->name('dashboard');
 
 // Auth routes
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
 
 // Register
 Route::get('register', [AuthController::class, 'register'])->name('register');
@@ -45,7 +49,7 @@ Route::resource('menus', MenuController::class);
 // Route::post('/menus/index',[MenuController::class,'index'])->name('index');
 
 //CRUD of customer
-Route::resource('customers', CustomersController::class);   
+Route::resource('customers', CustomersController::class);
 Route::put('/customers/{emp_id}', [CustomersController::class, 'update'])->name('customers.update');
 Route::post('/customers/import', [CustomersController::class, 'import'])->name('customers.import');
 
@@ -64,7 +68,6 @@ Route::resource('invoices', InvoicesController::class);
 Route::get('/invoices', [InvoicesController::class, 'index'])->name('invoices.index');
 Route::post('/invoices/generate', [InvoicesController::class, 'generateInvoice'])->name('invoices.generate');
 Route::get('/admin/invoices/{invoice_id}', [InvoicesController::class, 'show'])->name('invoices.show');
-Route::get('/admin/invoices/{invoice_id}/download', [InvoicesController::class, 'download'])->name('invoices.download');
 
 
 
@@ -93,7 +96,7 @@ Route::delete('/holidays/{h_id}', [HolidaysController::class, 'destroy'])->name(
 
 //Announcement
 Route::resource('announcements', AnnouncementController::class);
-Route::get('announcements',[AnnouncementController::class,'index'])->name('announcement');
+Route::get('announcements', [AnnouncementController::class, 'index'])->name('announcement');
 Route::post('/announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
 
 Route::put('/announcements/{id}', [AnnouncementController::class, 'update'])->name('announcements.update');
@@ -102,7 +105,7 @@ Route::get('/announcements/{id}/edit', [AnnouncementController::class, 'edit'])-
 
 
 //Attendance
-Route::resource('/attendance',AttendanceController::class);
+Route::resource('/attendance', AttendanceController::class);
 // Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance');
 Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
 Route::get('/attendance/details/{emp_id}', [AttendanceController::class, 'details'])->name('attendance.details');
@@ -114,7 +117,7 @@ Route::put('/settings', [SettingsController::class, 'update'])->name('settings.u
 
 //RegisteredOrder
 Route::resource('registeredorder', RegisteredOrderController::class);
-Route::get('registeredorder',[RegisteredOrderController::class,'index'])->name('registeredorder');
+Route::get('registeredorder', [RegisteredOrderController::class, 'index'])->name('registeredorder');
 Route::get('/registered-orders/{id}', [RegisteredOrderController::class, 'show'])->name('registered-orders.show');
 Route::get('/registered-orders/employee/{emp_id}', [RegisteredOrderController::class, 'showByEmployee'])->name('registered-orders.details');
 
@@ -126,7 +129,7 @@ Route::get('/registered-orders/employee/{emp_id}', [RegisteredOrderController::c
 // Route::get('/dashboard', [DashboardController::class, 'index']);
 
 //Settings
-Route::resource('settings',SettingsController::class);
+Route::resource('settings', SettingsController::class);
 
 
 
@@ -164,6 +167,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/invoices&payments', [InvoicesController::class, 'index'])->name('invoices');
     Route::get('/reports&analytics', [ReportsController::class, 'index'])->name('reports');
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
+    // Example route (adjust controller and method names as needed)
+    Route::post('/invoices/{invoice_id}/send-mail', [InvoicesController::class, 'sendInvoiceMail'])->name('invoices.send-mail');
+    //For all employee
+    Route::post('/invoices/send-all', [InvoicesController::class, 'sendAllMonthlyInvoices'])->name('invoices.send-all');
+
 });
 
 // Forgot Password

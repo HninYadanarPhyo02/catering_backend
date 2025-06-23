@@ -1,23 +1,29 @@
 <?php
 
 use App\Models\Holiday;
+use App\Models\Invoice;
 use App\Models\FoodMenu;
 use Illuminate\Http\Request;
+use App\Models\InvoiceDetail;
+use App\Mail\MonthlyReportMail;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\MailController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Auth\FoodController;
+use App\Http\Controllers\InvoiceDetailController;
 use App\Http\Controllers\Api\Auth\HolidayController;
 use App\Http\Controllers\Api\Auth\InvoiceController;
 use App\Http\Controllers\Api\Auth\FeedbackController;
 use App\Http\Controllers\Api\Auth\DashboardController;
 use App\Http\Controllers\Api\Auth\AttendanceController;
 use App\Http\Controllers\Api\Auth\AnnouncementController;
+use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
 use App\Http\Controllers\Api\Auth\FoodMonthPriceController;
 use App\Http\Controllers\Api\Auth\RegisteredOrderController;
 use App\Http\Controllers\AttendanceController as ControllersAttendanceController;
 use App\Http\Controllers\Api\Auth\RegisteredOrderController as AuthRegisteredOrderController;
-use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -93,15 +99,19 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 
     //Invoice 
-    Route::apiResource('invoices', InvoiceController::class);
+    // Route::apiResource('invoices', InvoiceController::class);
+    Route::get('/invoices/{invoice_id}', [InvoiceController::class, 'show']);
+    Route::get('/invoices', [InvoiceController::class, 'index']);
     Route::post('/invoices/generate', [InvoiceController::class, 'generateInvoice']);
     //Holiday
     Route::post('/holidays/import', [HolidayController::class, 'importBase64']);
 
     #CRUD of employee
     Route::get('/employees/list', [EmployeeController::class, 'list']);
-    Route::get('/employees/show/{name}', [EmployeeController::class, 'show']);
-    Route::put('/employees/{emp_id}', [EmployeeController::class, 'update']);
+    Route::get('/employees/show/{emp_id}', [EmployeeController::class, 'showInfo']);
+    Route::get('/employees/showPsw/{emp_id}', [EmployeeController::class, 'showPsw']);
+    Route::put('/employees/{emp_id}', [EmployeeController::class, 'updateInfo']);
+    Route::put('/employeesPsw/{emp_id}', [EmployeeController::class, 'updatePsw']);
     Route::put('/admins/{admin_id}', [EmployeeController::class, 'updateforAdmin']);
     Route::delete('/employees/destroy/{emp_id}', [EmployeeController::class, 'destroy']);
     Route::get('/employees/attendance/{emp_id}', [EmployeeController::class, 'getEmployeeAttendance']);
@@ -130,6 +140,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/invoices', [InvoiceController::class, 'index']);
     Route::post('/invoices/generate', [InvoiceController::class, 'generateMonthlyInvoices']);
     Route::post('/invoices/generateforEmp', [InvoiceController::class, 'generateInvoiceForLoggedInEmployee']);
+    Route::delete('/invoice-details/{invoce_id}', [InvoiceDetailController::class, 'destroy']);
+
 
     #CRUD of Attendance but can't update
     Route::post('/attendance', [AttendanceController::class, 'store']);
@@ -166,4 +178,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Route::get('/dashboard/MonthlyOrderCounts',[DashboardController::class,'getMonthlyAttendedMenus']);
     // For API
     Route::get('/dashboard/MonthlyOrderCounts', [DashboardController::class, 'getMonthlyRegisteredMenus']);
+
+    Route::post('/send-invoice/{emp_id}', [MailController::class, 'sendInvoice']);//send mail to each
+    //For all employee
+    Route::post('/invoices/send-all', [MailController::class, 'sendAllMonthlyInvoices']);
 });

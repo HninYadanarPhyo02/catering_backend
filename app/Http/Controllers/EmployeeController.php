@@ -2,14 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Validation\ValidationException;
+use App\Models\Invoice;
 use App\Models\Employee;
+use App\Models\Feedback;
+use App\Models\FoodMenu;
+use App\Models\Attendance;
 use Illuminate\Http\Request;
 use App\Imports\EmployeeImport;
+use App\Models\RegisteredOrder;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Resources\EmployeeResource;
+use App\Http\Resources\PasswordResource;
+use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Validators\ValidationException as ExcelValidationException;
 
 
@@ -98,11 +105,11 @@ class EmployeeController extends Controller
             'data' => $data,
         ], 200);
     }
-    public function show($name)
+    public function showInfo($emp_id)
     {
 
         // $data = FoodMenu::where('name', $name)->first();
-        $data = Employee::where('name', $name)->first();
+        $data = Employee::where('emp_id', $emp_id)->first();
         //   dd($data);
 
         if ($data) {
@@ -118,69 +125,37 @@ class EmployeeController extends Controller
             ], 404);
         }
     }
-    // public function update(Request $request, $emp_id)
-    // {
-    //     // 1. Get the employee
-    //     $employee = Employee::where('emp_id', $emp_id)->firstOrFail();
+    public function showPsw($emp_id)
+    {
 
-    //     // 2. Validate input
-    //     $request->validate([
-    //         'name'  => 'required|string|max:255',
-    //         'email' => 'required|email|unique:employee,email,' . $employee->emp_id . ',emp_id',
+        // $data = FoodMenu::where('name', $name)->first();
+        $data = Employee::where('emp_id', $emp_id)->first();
+        //   dd($data);
 
-    //         'old_password'     => 'required_with:password|string',
-    //         'new_password'     => 'nullable|string|min:6',
-    //         'confirm_password' => 'nullable|string|same:new_password',
-    //     ]);
-
-    //     // 3. Update basic fields
-    //     $employee->name  = $request->name;
-    //     $employee->email = $request->email;
-
-    //     // 4. Check and update password if needed
-    //     if ($request->filled('new_password')) {
-    //         // Check if old_password matches the one in DB
-    //         if (!Hash::check($request->old_password, $employee->password)) {
-    //             throw ValidationException::withMessages([
-    //                 'old_password' => ['Old password is incorrect.'],
-    //             ]);
-    //         }
-
-    //         // Hash and save new password
-    //         $employee->password = Hash::make($request->new_password);
-    //     }
-
-    //     // 5. Save employee
-    //     $employee->save();
-
-    //     return response()->json([
-    //         'message' => 'Employee updated successfully.',
-    //         'employee' => $employee,
-    //     ]);
-    // }
-    public function update(Request $request, $emp_id)
+        if ($data) {
+            $data = new PasswordResource($data);
+            return response([
+                'message' => 'Success',
+                'data' => $data,
+            ], 200);
+        } else {
+            return response([
+                'message' => 'Data not found with {$name}',
+                'data' => $data,
+            ], 404);
+        }
+    }
+    public function updateInfo(Request $request, $emp_id)
     {
         $employee = Employee::where('emp_id', $emp_id)->firstOrFail();
 
         $request->validate([
             'name'  => 'required|string|max:255',
             'email' => 'required|email|unique:employee,email,' . $employee->emp_id . ',emp_id',
-            'old_password'     => 'required_with:new_password|string',
-            'new_password'     => 'nullable|string|min:6',
-            'confirm_password' => 'nullable|string|same:new_password',
         ]);
 
         $employee->name  = $request->name;
         $employee->email = $request->email;
-
-        if ($request->filled('new_password')) {
-            if (!Hash::check($request->old_password, $employee->password)) {
-                throw ValidationException::withMessages([
-                    'old_password' => ['Old password is incorrect.'],
-                ]);
-            }
-            $employee->password = Hash::make($request->new_password);
-        }
 
         $employee->save();
 
@@ -189,75 +164,100 @@ class EmployeeController extends Controller
             'employee' => new EmployeeResource($employee),
         ]);
     }
-   public function updateforAdmin(Request $request, $admin_id)
-{
-    $employee = Employee::where('emp_id', $admin_id)->first();
+    public function updatePsw(Request $request, $emp_id)
+    {
+        $employee = Employee::where('emp_id', $emp_id)->firstOrFail();
 
-    if (!$employee) {
-        return response()->json(['message' => 'Employee not found'], 404);
+        $request->validate([
+            'old_password'     => 'required|string',
+            'new_password'     => 'required|string|min:6',
+            'confirm_password' => 'required|string|same:new_password',
+        ]);
+
+        if (!Hash::check($request->old_password, $employee->password)) {
+            throw ValidationException::withMessages([
+                'old_password' => ['Old password is incorrect.'],
+            ]);
+        }
+
+        $employee->password = Hash::make($request->new_password);
+        $employee->save();
+
+        return response()->json([
+            'message' => 'Password updated successfully.',
+        ], 200);
     }
 
-    $request->validate([
-        'name'  => 'required|string|max:255',
-        'email' => 'required|email|unique:employee,email,' . $employee->emp_id . ',emp_id',
-        'role'  => 'required|in:admin,employee',
-    ]);
 
-    $newRole = $request->role;
-    $roleChanged = $newRole !== $employee->role;
+    public function updateforAdmin(Request $request, $admin_id)
+    {
+        $employee = Employee::where('emp_id', $admin_id)->first();
 
-    // If role changed, regenerate emp_id and set default password
-    if ($roleChanged) {
-        if ($newRole === 'admin') {
-            $lastAdmin = Employee::where('role', 'admin')
-                ->where('emp_id', 'like', 'admin_%')
-                ->orderByRaw("CAST(SUBSTRING(emp_id, 7) AS UNSIGNED) DESC")
-                ->first();
+        if (!$employee) {
+            return response()->json(['message' => 'Employee not found'], 404);
+        }
 
-            $lastNumber = $lastAdmin ? intval(substr($lastAdmin->emp_id, 6)) : 0;
-            $employee->emp_id = 'admin_' . str_pad($lastNumber + 1, 2, '0', STR_PAD_LEFT);
-            $employee->password = Hash::make('admin123');
+        $request->validate([
+            'name'  => 'required|string|max:255',
+            'email' => 'required|email|unique:employee,email,' . $employee->emp_id . ',emp_id',
+            'role'  => 'required|in:admin,employee',
+        ]);
+
+        $newRole = $request->role;
+        $roleChanged = $newRole !== $employee->role;
+
+        // If role changed, regenerate emp_id and set default password
+        if ($roleChanged) {
+            if ($newRole === 'admin') {
+                $lastAdmin = Employee::where('role', 'admin')
+                    ->where('emp_id', 'like', 'admin_%')
+                    ->orderByRaw("CAST(SUBSTRING(emp_id, 7) AS UNSIGNED) DESC")
+                    ->first();
+
+                $lastNumber = $lastAdmin ? intval(substr($lastAdmin->emp_id, 6)) : 0;
+                $employee->emp_id = 'admin_' . str_pad($lastNumber + 1, 2, '0', STR_PAD_LEFT);
+                $employee->password = Hash::make('admin123');
+            } else {
+                $lastEmp = Employee::where('role', 'employee')
+                    ->where('emp_id', 'like', 'emp_%')
+                    ->orderByRaw("CAST(SUBSTRING(emp_id, 5) AS UNSIGNED) DESC")
+                    ->first();
+
+                $lastNumber = $lastEmp ? intval(substr($lastEmp->emp_id, 4)) : 0;
+                $employee->emp_id = 'emp_' . str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
+                $employee->password = Hash::make('emp123');
+            }
         } else {
-            $lastEmp = Employee::where('role', 'employee')
-                ->where('emp_id', 'like', 'emp_%')
-                ->orderByRaw("CAST(SUBSTRING(emp_id, 5) AS UNSIGNED) DESC")
-                ->first();
+            // Optional password change only if all fields are provided
+            if (
+                $request->filled('old_password') &&
+                $request->filled('new_password') &&
+                $request->filled('new_password_confirmation')
+            ) {
+                if (!Hash::check($request->old_password, $employee->password)) {
+                    return response()->json(['message' => 'Old password is incorrect'], 403);
+                }
 
-            $lastNumber = $lastEmp ? intval(substr($lastEmp->emp_id, 4)) : 0;
-            $employee->emp_id = 'emp_' . str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
-            $employee->password = Hash::make('emp123');
-        }
-    } else {
-        // Optional password change only if all fields are provided
-        if (
-            $request->filled('old_password') &&
-            $request->filled('new_password') &&
-            $request->filled('new_password_confirmation')
-        ) {
-            if (!Hash::check($request->old_password, $employee->password)) {
-                return response()->json(['message' => 'Old password is incorrect'], 403);
+                if ($request->new_password !== $request->new_password_confirmation) {
+                    return response()->json(['message' => 'New password confirmation does not match'], 422);
+                }
+
+                $employee->password = Hash::make($request->new_password);
             }
-
-            if ($request->new_password !== $request->new_password_confirmation) {
-                return response()->json(['message' => 'New password confirmation does not match'], 422);
-            }
-
-            $employee->password = Hash::make($request->new_password);
         }
+
+        // Always update these fields
+        $employee->name  = $request->name;
+        $employee->email = $request->email;
+        $employee->role  = $newRole;
+
+        $employee->save();
+
+        return response()->json([
+            'message' => 'Employee updated successfully',
+            'employee' => $employee,
+        ], 200);
     }
-
-    // Always update these fields
-    $employee->name  = $request->name;
-    $employee->email = $request->email;
-    $employee->role  = $newRole;
-
-    $employee->save();
-
-    return response()->json([
-        'message' => 'Employee updated successfully',
-        'employee' => $employee,
-    ], 200);
-}
 
 
     public function destroy($emp_id)
@@ -273,7 +273,25 @@ class EmployeeController extends Controller
                 404
             );
         }
+        $affectedAttendances = Attendance::where('emp_id', $emp_id)->get();
+        $affectedRegisteredOrder = RegisteredOrder::where('emp_id', $emp_id)->get();
+        $affectedInvoice = Invoice::where('emp_id', $emp_id)->get();
+        $affectedFeedback = Feedback::where('emp_id', $emp_id)->get();
+
+        if ($affectedRegisteredOrder->count()) {
+            RegisteredOrder::where('emp_id', $emp_id)->delete();
+        }
+        if ($affectedInvoice->count()) {
+            Invoice::where('emp_id', $emp_id)->delete();
+        }
+        if ($affectedAttendances->count()) {
+            Attendance::where('emp_id', $emp_id)->delete();
+        }
+        if ($affectedFeedback->count()) {
+            Feedback::where('emp_id', $emp_id)->delete();
+        }
         $data->delete();
+
         return response()->json(['message' => 'Employee deleted'], 200);
     }
     public function getEmployeeAttendance($emp_id)

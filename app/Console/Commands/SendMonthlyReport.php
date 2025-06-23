@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Mail;
 
 class SendMonthlyReport extends Command
 {
-    protected $signature = 'invoice:send-monthly';
+    protected $signature = 'send:monthly-invoices';
     protected $description = 'Send monthly invoice to employees';
 
     public function handle()

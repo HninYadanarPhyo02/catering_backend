@@ -29,18 +29,28 @@ class MonthlyReportMail extends Mailable
             subject: 'Monthly Report Mail',
         );
     }
+    // public function build()
+    // {
+    //     return $this->subject('Monthly Catering Invoice')
+    //         ->view('emails.monthly_invoice');
+    // }
     public function build()
-    {
-        return $this->subject('Your Monthly Invoice')
-            ->view('emails.monthly_invoice');
-    }
+{
+    return $this->view('emails.monthly-invoice')
+                ->with([
+                    'invoice' => $this->invoice,
+                    'details' => $this->details, // optional if you want to show items
+                ])
+                ->subject('Your Monthly Invoice');
+}
+
     /**
      * Get the message content definition.
      */
     public function content(): Content
     {
         return new Content(
-            view: 'view.name',
+            view: 'emails.monthly_invoice',
         );
     }
 

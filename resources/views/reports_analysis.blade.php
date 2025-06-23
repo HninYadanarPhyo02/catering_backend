@@ -3,18 +3,20 @@
 
 @section('content')
 <style>
-.chart-container {
-    position: relative;
-    width: 100%;
-    padding-top: 40%; /* Adjust chart height here (40% = shorter height) */
-}
-.chart-container canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100% !important;
-    height: 100% !important;
-}
+    .chart-container {
+        position: relative;
+        width: 100%;
+        padding-top: 40%;
+        /* Adjust chart height here (40% = shorter height) */
+    }
+
+    .chart-container canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100% !important;
+        height: 100% !important;
+    }
 </style>
 
 <div class="container my-5">
@@ -76,7 +78,9 @@
         responsive: true,
         maintainAspectRatio: false,
         scales: {
-            y: { beginAtZero: true }
+            y: {
+                beginAtZero: true
+            }
         }
     };
 
@@ -126,24 +130,32 @@
         type: 'bar',
         data: {
             labels: monthlyTrendLabels,
-            datasets: [
-                {
+            datasets: [{
                     label: 'Registered Orders',
                     data: monthlyRegisteredData,
                     backgroundColor: 'rgba(27, 146, 132, 0.7)'
                 },
                 {
                     label: 'Attendance (Checked Out)',
-                    data: monthlyAttendanceData,
+                    data: monthlyAttendanceData.map(val => val ?? 0), // fallback to 0 if null/undefined
                     backgroundColor: 'rgba(233, 113, 16, 0.7)'
                 }
             ]
         },
         options: {
             ...commonOptions,
+            plugins: {
+                tooltip: {
+                    enabled: true
+                },
+            },
             scales: {
-                y: { beginAtZero: true },
-                x: { stacked: false }
+                y: {
+                    beginAtZero: true
+                },
+                x: {
+                    stacked: false
+                }
             }
         }
     });

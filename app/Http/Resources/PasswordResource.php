@@ -3,10 +3,9 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class EmployeeResource extends JsonResource
+class PasswordResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -18,11 +17,6 @@ class EmployeeResource extends JsonResource
         return[
             'id' => $this->id,
             'emp_id' =>$this->emp_id,
-            'name' =>$this->name,
-            'email' => $this->email,
-            'role' => $this->role,
-
-            ];
+            'password' =>$this->password,];
     }
 }
-

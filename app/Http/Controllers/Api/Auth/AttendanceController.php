@@ -79,90 +79,90 @@ class AttendanceController extends Controller
     //     }
     // }
     public function store(Request $request)
-{
-    $request->validate([
-        'emp_id' => 'required|string',
-        'date' => 'required|date',
-        'status' => 'required|string',
-        'check_out' => 'required|boolean',
-    ]);
+    {
+        $request->validate([
+            'emp_id' => 'required|string',
+            'date' => 'required|date',
+            'status' => 'required|string',
+            'check_out' => 'required|boolean',
+        ]);
 
-    // Get food price
-    $foodPrice = FoodMonthPrice::where('date', $request->date)->first();
-    if (!$foodPrice) {
-        return response()->json(['message' => 'No food price found for the given date'], 404);
-    }
-
-    // ===== ATTENDANCE =====
-    $attendance = Attendance::where('emp_id', $request->emp_id)
-        ->where('date', $request->date)
-        ->first();
-
-    if ($attendance) {
-        if ($request->check_out) {
-            if ($attendance->check_out) {
-                return response()->json(['message' => 'Employee already checked out'], 400);
-            }
-            $attendance->status = 'present';
-            $attendance->check_out = 1;
-        } else {
-            $attendance->status = $request->status;
-            $attendance->check_out = $request->check_out;
+        // Get food price
+        $foodPrice = FoodMonthPrice::where('date', $request->date)->first();
+        if (!$foodPrice) {
+            return response()->json(['message' => 'No food price found for the given date'], 404);
         }
-        $attendance->save();
-    } else {
-        $attendance = Attendance::create([
-            'emp_id' => $request->emp_id,
-            'food_id' => $foodPrice->food_id,
-            'date' => $request->date,
-            'status' => $request->status,
-            'check_out' => $request->check_out,
+
+        // ===== ATTENDANCE =====
+        $attendance = Attendance::where('emp_id', $request->emp_id)
+            ->where('date', $request->date)
+            ->first();
+
+        if ($attendance) {
+            if ($request->check_out) {
+                if ($attendance->check_out) {
+                    return response()->json(['message' => 'Employee already checked out'], 400);
+                }
+                $attendance->status = 'present';
+                $attendance->check_out = 1;
+            } else {
+                $attendance->status = $request->status;
+                $attendance->check_out = $request->check_out;
+            }
+            $attendance->save();
+        } else {
+            $attendance = Attendance::create([
+                'emp_id' => $request->emp_id,
+                'food_id' => $foodPrice->food_id,
+                'date' => $request->date,
+                'status' => $request->status,
+                'check_out' => $request->check_out,
+            ]);
+        }
+
+        // ===== INVOICE DETAIL =====
+        $invoice = Invoice::where('emp_id', $request->emp_id)
+            ->where('month', date('n', strtotime($request->date)))
+            ->where('year', date('Y', strtotime($request->date)))
+            ->first();
+
+        if (!$invoice) {
+            return response()->json(['message' => 'Invoice not found for this employee and month'], 404);
+        }
+
+        $invoiceDetail = InvoiceDetail::where('invoice_id', $invoice->invoice_id)
+            ->where('date', $request->date)
+            ->first();
+
+        if ($invoiceDetail) {
+            if ($request->check_out) {
+                if ($invoiceDetail->check_out) {
+                    return response()->json(['message' => 'Invoice already checked out'], 400);
+                }
+                $invoiceDetail->status = 'present';
+                $invoiceDetail->check_out = 1;
+            } else {
+                $invoiceDetail->status = $request->status;
+                $invoiceDetail->check_out = $request->check_out;
+            }
+            $invoiceDetail->save();
+        } else {
+            InvoiceDetail::create([
+                'invoice_id' => $invoice->invoice_id,
+                'date' => $request->date,
+                'food_name' => $foodPrice->food_name,
+                'price' => $foodPrice->price,
+                'status' => $request->status,
+                'check_out' => $request->check_out,
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Attendance and Invoice Detail saved/updated successfully',
+            'attendance' => $attendance,
+            'code' => 200
         ]);
     }
-
-    // ===== INVOICE DETAIL =====
-    $invoice = Invoice::where('emp_id', $request->emp_id)
-        ->where('month', date('n', strtotime($request->date)))
-        ->where('year', date('Y', strtotime($request->date)))
-        ->first();
-
-    if (!$invoice) {
-        return response()->json(['message' => 'Invoice not found for this employee and month'], 404);
-    }
-
-    $invoiceDetail = InvoiceDetail::where('invoice_id', $invoice->invoice_id)
-        ->where('date', $request->date)
-        ->first();
-
-    if ($invoiceDetail) {
-        if ($request->check_out) {
-            if ($invoiceDetail->check_out) {
-                return response()->json(['message' => 'Invoice already checked out'], 400);
-            }
-            $invoiceDetail->status = 'present';
-            $invoiceDetail->check_out = 1;
-        } else {
-            $invoiceDetail->status = $request->status;
-            $invoiceDetail->check_out = $request->check_out;
-        }
-        $invoiceDetail->save();
-    } else {
-        InvoiceDetail::create([
-            'invoice_id' => $invoice->invoice_id,
-            'date' => $request->date,
-            'food_name' => $foodPrice->food_name,
-            'price' => $foodPrice->price,
-            'status' => $request->status,
-            'check_out' => $request->check_out,
-        ]);
-    }
-
-    return response()->json([
-        'message' => 'Attendance and Invoice Detail saved/updated successfully',
-        'attendance' => $attendance,
-        'code' => 200
-    ]);
-}
 
 
     public function show($emp_id)
@@ -322,69 +322,69 @@ class AttendanceController extends Controller
     }
 
     //invoice info for Admin Role
-   public function invoice(Request $request)
-{
-    $currentMonth = Carbon::now()->month;
-    $currentYear = Carbon::now()->year;
+    public function invoice(Request $request)
+    {
+        $currentMonth = Carbon::now()->month;
+        $currentYear = Carbon::now()->year;
 
-    // Load attendance with employee and food info
-    $attendances = Attendance::with(['employee', 'foodmonthpriceByDate'])
-        ->whereMonth('date', $currentMonth)
-        ->whereYear('date', $currentYear)
-        ->orderBy('emp_id')
-        ->get();
+        // Load attendance with employee and food info
+        $attendances = Attendance::with(['employee', 'foodmonthpriceByDate'])
+            ->whereMonth('date', $currentMonth)
+            ->whereYear('date', $currentYear)
+            ->orderBy('emp_id')
+            ->get();
 
-    if ($attendances->isEmpty()) {
-        return response()->json([
-            'isSuccess' => false,
-            'message' => 'No attendance records found for this month.',
-            'data' => [],
-        ], 200);
-    }
+        if ($attendances->isEmpty()) {
+            return response()->json([
+                'isSuccess' => false,
+                'message' => 'No attendance records found for this month.',
+                'data' => [],
+            ], 200);
+        }
 
-    $grouped = $attendances->groupBy('emp_id');
+        $grouped = $attendances->groupBy('emp_id');
 
-    $result = [];
+        $result = [];
 
-    foreach ($grouped as $empId => $records) {
-        $employee = $records->first()->employee;
-        $empName = optional($employee)->name;
-        $empEmail = optional($employee)->email; // Optional: more info
-        // $empDepartment = optional($employee)->department; // Optional
+        foreach ($grouped as $empId => $records) {
+            $employee = $records->first()->employee;
+            $empName = optional($employee)->name;
+            $empEmail = optional($employee)->email; // Optional: more info
+            // $empDepartment = optional($employee)->department; // Optional
 
-        $totalAmount = 0;
-        $dates = [];
+            $totalAmount = 0;
+            $dates = [];
 
-        foreach ($records as $attendance) {
-            $food = $attendance->foodmonthpriceByDate;
-            $price = optional($food)->price ?? 0;
-            $totalAmount += $price;
+            foreach ($records as $attendance) {
+                $food = $attendance->foodmonthpriceByDate;
+                $price = optional($food)->price ?? 0;
+                $totalAmount += $price;
 
-            $dates[] = [
-                'date' => $attendance->date,
-                'food_name' => optional($food)->food_name,
-                'price' => $price,
-                'status' => $attendance->status,
-                'check_out' => $attendance->check_out,
+                $dates[] = [
+                    'date' => $attendance->date,
+                    'food_name' => optional($food)->food_name,
+                    'price' => $price,
+                    'status' => $attendance->status,
+                    'check_out' => $attendance->check_out,
+                ];
+            }
+
+            $result[] = [
+                'emp_id'       => $empId,
+                'emp_name'     => $empName,
+                'emp_email'    => $empEmail,
+                // 'department'   => $empDepartment,
+                'total_amount' => $totalAmount,
+                'attendances'  => $dates,
             ];
         }
 
-        $result[] = [
-            'emp_id'       => $empId,
-            'emp_name'     => $empName,
-            'emp_email'    => $empEmail,
-            // 'department'   => $empDepartment,
-            'total_amount' => $totalAmount,
-            'attendances'  => $dates,
-        ];
+        return response()->json([
+            'isSuccess' => true,
+            'message' => 'Monthly employee attendance totals',
+            'data' => $result
+        ], 200);
     }
-
-    return response()->json([
-        'isSuccess' => true,
-        'message' => 'Monthly employee attendance totals',
-        'data' => $result
-    ], 200);
-}
 
 
     public function destroy($id)

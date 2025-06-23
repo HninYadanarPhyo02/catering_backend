@@ -244,50 +244,6 @@
     </script>
 
 
-
-    <!-- {{-- Monthly Employee Invoices --}}
-<div class="card border-0 shadow-sm mb-4">
-    <div class="card-header" style="background-color: #F1FAEE; border-bottom: 1px solid #dee2e6;">
-        <div class="d-flex justify-content-between align-items-center">
-            <h5 class="mb-0" style="color: #264653;">Monthly Invoices</h5>
-            <i class="fas fa-file-invoice-dollar text-muted"></i>
-        </div>
-    </div>
-    <div class="card-body">
-        @if($monthlyInvoices->isEmpty())
-            <div class="text-center text-muted py-4">
-                <i class="fas fa-inbox fa-2x mb-2"></i>
-                <p class="mb-0">No invoices found.</p>
-            </div>
-        @else
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead style="background-color: #e9ecef;">
-                        <tr>
-                            <th>Invoice ID</th>
-                            <th>Employee</th>
-                            <th>Month</th>
-                            <th>Year</th>
-                            <th>Total Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($monthlyInvoices as $invoice)
-                        <tr>
-                            <td class="fw-semibold text-dark">{{ $invoice->invoice_id }}</td>
-                            <td class="text-dark">{{ $invoice->employee->name ?? 'N/A' }}</td>
-                            <td>{{ \Carbon\Carbon::create()->month($invoice->month)->format('F') }}</td>
-                            <td>{{ $invoice->year }}</td>
-                            <td class="fw-semibold text-dark">${{ number_format($invoice->total_amount, 2) }}</td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        @endif
-    </div>
-</div> -->
-
     {{-- Monthly Employee Invoices --}}
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-header" style="background-color: #F1FAEE; border-bottom: 1px solid #dee2e6;">
@@ -328,10 +284,16 @@
                                 <a href="{{ route('invoices.show', $invoice->invoice_id) }}" class="btn btn-sm btn-outline-primary">
                                     View
                                 </a>
-                                <a href="{{ route('invoices.download', $invoice->invoice_id) }}" class="btn btn-sm btn-outline-secondary">
-                                    Download
-                                </a>
+
+                                {{-- Send Mail Button --}}
+                                <form action="{{ route('invoices.send-mail', $invoice->invoice_id) }}" method="POST" style="display:inline;">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-outline-success" onclick="return confirm('Send invoice email to employee?')">
+                                        Send Invoice
+                                    </button>
+                                </form>
                             </td>
+
                         </tr>
                         @endif
                         @endforeach

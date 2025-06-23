@@ -59,7 +59,7 @@
           @foreach($orderSummary as $order)
           <tr class="text-center">
             <td class="fw-semibold text-muted">{{ $order->emp_id }}</td>
-            <td>{{ $order->employee->name }}</td>
+            <td>{{ $order->employee?->name }}</td>
             <td class="fw-bold text-success">{{ $order->order_count }}</td>
             <td>
               <a href="{{ route('registered-orders.details', $order->emp_id) }}"

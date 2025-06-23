@@ -130,7 +130,7 @@ class AnnouncementController extends Controller
             FoodMonthPrice::whereDate('date', $validated['date'])->delete();
         }
         if ($affectAvailableInvoice->count()) {
-            FoodMonthPrice::whereDate('date', $request->date)->delete();
+            FoodMonthPrice::whereDate('date', $validated['date'])->delete();
         }
 
         // 5. Return success response

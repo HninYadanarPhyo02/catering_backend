@@ -9,9 +9,11 @@ use App\Models\Attendance;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\FoodMonthPrice;
+use App\Mail\MonthlyReportMail;
 use App\Models\RegisteredOrder;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 
@@ -177,7 +179,7 @@ class InvoicesController extends Controller
         }
 
         // Manual pagination for $result array
-        $perPage = 5;
+        $perPage = 2;
         $page = $request->input('page', 1);
         $items = collect($result);
 
@@ -198,76 +200,74 @@ class InvoicesController extends Controller
         ]);
     }
 
-        public function generateInvoice(Request $request)
-        {
-            $type = $request->input('type', 'month');
-            $emp_id = $request->input('emp_id');
+    public function generateInvoice(Request $request)
+    {
+        $type = $request->input('type', 'month');
+        $emp_id = $request->input('emp_id');
 
-            // Date range filter
-            switch ($type) {
-                case 'week':
-                    $startDate = now()->startOfWeek();
-                    $endDate = now()->endOfWeek();
-                    break;
-                case 'year':
-                    $startDate = now()->startOfYear();
-                    $endDate = now()->endOfYear();
-                    break;
-                default:
-                    $startDate = now()->startOfMonth();
-                    $endDate = now()->endOfMonth();
-                    break;
-            }
-
-            $orders = RegisteredOrder::where('emp_id', $emp_id)
-                ->whereBetween('date', [$startDate, $endDate])
-                ->get();
-
-            if ($orders->isEmpty()) {
-                return redirect()->back()->with('error', 'No registered orders found.');
-            }
-
-            $attendanceCount = Attendance::where('emp_id', $emp_id)
-                ->where('check_out', 1)
-                ->whereBetween('date', [$startDate, $endDate])
-                ->count();
-
-            $foodPrice = FoodMonthPrice::where('food_id', $emp_id)
-                ->whereYear('date', now()->year)
-                ->whereMonth('date', now()->month)
-                ->first();
-
-            $unit_price = $foodPrice ? $foodPrice->price : 0;
-            $total = $attendanceCount * $unit_price;
-
-            $employee = Employee::find($emp_id);
-
-            $invoice = Invoice::create([
-                'invoice_number' => (string) Str::uuid(),
-                'total_day' => $attendanceCount,
-                'emp_id' =>  $employee->emp_id,
-                'customer_name' => $employee ? $employee->name : 'Unknown',
-                'order_details' => json_encode($orders->map(fn($order) => [
-                    'order_id' => $order->id,
-                    'item' => $order->item_name,
-                    'date' => $order->date,
-                    'quantity' => $order->quantity,
-                ])),
-                'quantity' => $attendanceCount,
-                'unit_price' => $unit_price,
-                'total' => $total,
-                'payment_status' => 'unpaid',
-            ]);
-            return redirect()->route('payments.create', ['invoiceId' => $invoice->id]);
+        // Date range filter
+        switch ($type) {
+            case 'week':
+                $startDate = now()->startOfWeek();
+                $endDate = now()->endOfWeek();
+                break;
+            case 'year':
+                $startDate = now()->startOfYear();
+                $endDate = now()->endOfYear();
+                break;
+            default:
+                $startDate = now()->startOfMonth();
+                $endDate = now()->endOfMonth();
+                break;
         }
+
+        $orders = RegisteredOrder::where('emp_id', $emp_id)
+            ->whereBetween('date', [$startDate, $endDate])
+            ->get();
+
+        if ($orders->isEmpty()) {
+            return redirect()->back()->with('error', 'No registered orders found.');
+        }
+
+        $attendanceCount = Attendance::where('emp_id', $emp_id)
+            ->where('check_out', 1)
+            ->whereBetween('date', [$startDate, $endDate])
+            ->count();
+
+        $foodPrice = FoodMonthPrice::where('food_id', $emp_id)
+            ->whereYear('date', now()->year)
+            ->whereMonth('date', now()->month)
+            ->first();
+
+        $unit_price = $foodPrice ? $foodPrice->price : 0;
+        $total = $attendanceCount * $unit_price;
+
+        $employee = Employee::find($emp_id);
+
+        $invoice = Invoice::create([
+            'invoice_number' => (string) Str::uuid(),
+            'total_day' => $attendanceCount,
+            'emp_id' =>  $employee->emp_id,
+            'customer_name' => $employee ? $employee->name : 'Unknown',
+            'order_details' => json_encode($orders->map(fn($order) => [
+                'order_id' => $order->id,
+                'item' => $order->item_name,
+                'date' => $order->date,
+                'quantity' => $order->quantity,
+            ])),
+            'quantity' => $attendanceCount,
+            'unit_price' => $unit_price,
+            'total' => $total,
+            'payment_status' => 'unpaid',
+        ]);
+        return redirect()->route('payments.create', ['invoiceId' => $invoice->id]);
+    }
 
     public function create($invoiceId)
     {
         $invoice = Invoice::findOrFail($invoiceId);
         return view('payments.create', compact('invoice'));
     }
-
-
 
     public function store(Request $request)
     {
@@ -287,20 +287,19 @@ class InvoicesController extends Controller
         return redirect()->route('dashboard')->with('success', 'Invoice created successfully.');
     }
 
+    // public function show($invoice_id)
+    // {
+    //     $invoice = Invoice::with(['employee', 'details'])->where('invoice_id', $invoice_id)->firstOrFail();
+    //     return view('invoices.show', compact('invoice'));
+    // }
     public function show($invoice_id)
     {
-        $invoice = Invoice::with(['employee', 'details'])->where('invoice_id', $invoice_id)->firstOrFail();
+        $invoice = Invoice::with(['employee', 'details'])
+            ->where('invoice_id', $invoice_id)
+            ->firstOrFail();
+
         return view('invoices.show', compact('invoice'));
     }
-    public function download($invoice_id)
-    {
-        $invoice = Invoice::with(['employee', 'details'])->where('invoice_id', $invoice_id)->firstOrFail();
-
-        $pdf = PDF::loadView('invoices.pdf', compact('invoice'));
-        return $pdf->download($invoice->invoice_id . '.pdf');
-    }
-
-
     public function edit(Invoice $invoice)
     {
         return view('invoices.edit', compact('invoice'));
@@ -329,5 +328,81 @@ class InvoicesController extends Controller
         $invoice->delete();
 
         return redirect()->route('invoices.index')->with('success', 'Invoice deleted successfully.');
+    }
+    public function sendInvoiceMail($invoice_id)
+    {
+        // Fetch invoice with relations
+        $invoice = Invoice::with('employee', 'details')->where('invoice_id', $invoice_id)->first();
+
+        if (!$invoice) {
+            return back()->with('error', 'Invoice not found.');
+        }
+
+        if (!$invoice->employee) {
+            return back()->with('error', 'Employee not found.');
+        }
+
+        // Calculate order_count if not present
+        $invoice->order_count = $invoice->details->count();
+
+        // Calculate total if not present (adjust 'amount' field to your details column)
+        if (!isset($invoice->total)) {
+            $invoice->total = $invoice->total_amount;
+        }
+
+        try {
+            Mail::to($invoice->employee->email)
+                ->send(new MonthlyReportMail($invoice, $invoice->details));
+
+            return back()->with('success', 'Invoice email sent successfully to ' . $invoice->employee->email);
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to send email: ' . $e->getMessage());
+        }
+    }
+    public function sendAllMonthlyInvoices(Request $request)
+    {
+        $currentMonth = Carbon::now()->month;
+        $currentYear = Carbon::now()->year;
+
+        // Get all employees who have invoices for this month/year
+        $employees = Employee::whereHas('invoices', function ($query) use ($currentMonth, $currentYear) {
+            $query->where('month', $currentMonth)
+                ->where('year', $currentYear);
+        })->get();
+
+        $sent = 0;
+        $failed = [];
+
+        foreach ($employees as $employee) {
+            // Get latest invoice for current month/year with details
+            $invoice = $employee->invoices()
+                ->where('month', $currentMonth)
+                ->where('year', $currentYear)
+                ->with('details')
+                ->latest()
+                ->first();
+
+            // Skip if no invoice or details
+            if (!$invoice || $invoice->details->isEmpty()) {
+                continue;
+            }
+
+            // Calculate order count and total if needed for the mail view
+            $invoice->order_count = $invoice->details->count();
+            $invoice->total = $invoice->total_amount; // adjust field if needed
+
+            try {
+                Mail::to($employee->email)->send(new MonthlyReportMail($invoice, $invoice->details));
+                $sent++;
+            } catch (\Exception $e) {
+                $failed[] = $employee->emp_id . ' - ' . $e->getMessage();
+            }
+        }
+
+        if (count($failed) > 0) {
+            return back()->with('error', 'Failed to send email(s) to: ' . implode(', ', $failed) . '. Successfully sent: ' . $sent);
+        }
+
+        return back()->with('success', 'Monthly invoices sent successfully to ' . $sent . ' employees.');
     }
 }
