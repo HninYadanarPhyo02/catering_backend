@@ -5,10 +5,12 @@ namespace App\Models;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Invoice extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
+    protected $dates = ['deleted_at'];
     protected $primaryKey = 'invoice_id';
 
     public $incrementing = false; // Since UUIDs are not integers
@@ -28,7 +30,7 @@ class Invoice extends Model
     {
         return $this->hasMany(InvoiceDetail::class, 'invoice_id', 'invoice_id');
     }
-
+    
     // If you want to use invoice_number as primary key (optional):
     // protected $primaryKey = 'invoice_number';
 

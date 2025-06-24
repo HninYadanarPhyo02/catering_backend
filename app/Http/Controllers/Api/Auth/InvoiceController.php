@@ -294,29 +294,141 @@ class InvoiceController extends Controller
         ]);
     }
 
-    public function index()
-    {
-        $invoices = Invoice::with(['employee', 'details'])->get();
+    // public function index()
+    // {
+    //     $invoices = Invoice::with(['employee', 'details'])->get();
 
-        $result = $invoices->map(function ($invoice) {
-            return [
-                'emp_id' => optional($invoice->employee)->emp_id,
-                'emp_name' => optional($invoice->employee)->name,
-                'emp_email' => optional($invoice->employee)->email,
-                'total_amount' => $invoice->total_amount,
-                'attendances' => $invoice->details->map(function ($d) {
-                    return [
-                        'date' => $d->date,
-                        'food_name' => $d->food_name,
-                        'price' => $d->price,
-                        'status' => $d->status,
-                        'check_out' => $d->check_out,
-                    ];
-                }),
-            ];
+    //     $result = $invoices->map(function ($invoice) {
+    //         return [
+    //             'emp_id' => optional($invoice->employee)->emp_id,
+    //             'emp_name' => optional($invoice->employee)->name,
+    //             'emp_email' => optional($invoice->employee)->email,
+    //             'total_amount' => $invoice->total_amount,
+    //             'attendances' => $invoice->details->map(function ($d) {
+    //                 return [
+    //                     'date' => $d->date,
+    //                     'food_name' => $d->food_name,
+    //                     'price' => $d->price,
+    //                     'status' => $d->status,
+    //                     'check_out' => $d->check_out,
+    //                 ];
+    //             }),
+    //         ];
+    //     });
+
+
+    //     return response()->json($result);
+    // }
+//     public function index()
+// {
+//     $invoices = Invoice::with(['employee', 'details'])->get();
+
+//     $result = $invoices->map(function ($invoice) {
+//         // Filter valid attendances
+//         $validDetails = $invoice->details->filter(function ($d) {
+//             return is_null($d->deleted_at);
+//         });
+
+//         $recalculatedTotal = $validDetails->sum('price');
+
+//         return [
+//             'emp_id'       => optional($invoice->employee)->emp_id,
+//             'emp_name'     => optional($invoice->employee)->name,
+//             'emp_email'    => optional($invoice->employee)->email,
+//             'total_amount' => $recalculatedTotal,
+//             'attendances'  => $invoice->details->map(function ($d) {
+//                 return [
+//                     'date'       => $d->date,
+//                     'food_name'  => $d->food_name,
+//                     'price'      => $d->price,
+//                     'status'     => $d->status,
+//                     'check_out'  => $d->check_out,
+//                 ];
+//             }),
+//         ];
+//     });
+
+//     return response()->json($result);
+// }
+public function index()
+{
+    $invoices = Invoice::with(['employee', 'details'])->get();
+
+    $result = $invoices->map(function ($invoice) {
+        // Filter out soft-deleted details
+        $validDetails = $invoice->details->filter(function ($d) {
+            return is_null($d->deleted_at);
         });
 
+        $recalculatedTotal = $validDetails->sum('price');
 
-        return response()->json($result);
+        // Skip invoices with total_amount == 0
+        if ($recalculatedTotal == 0) {
+            return null;
+        }
+
+        return [
+            'emp_id'       => optional($invoice->employee)->emp_id,
+            'emp_name'     => optional($invoice->employee)->name,
+            'emp_email'    => optional($invoice->employee)->email,
+            'total_amount' => $recalculatedTotal,
+            'attendances'  => $validDetails->map(function ($d) {
+                return [
+                    'date'      => $d->date,
+                    'food_name' => $d->food_name,
+                    'price'     => $d->price,
+                    'status'    => $d->status,
+                    'check_out' => $d->check_out,
+                ];
+            })->values(),
+        ];
+    })->filter()->values(); // Remove null entries and reset index
+
+    return response()->json($result);
+}
+
+//INvoice for only one
+public function recalculateInvoiceTotal($invoice_id)
+    {
+        $invoice = Invoice::with('details')->where('invoice_id', $invoice_id)->first();
+
+        if (!$invoice) {
+            return response()->json(['message' => 'Invoice not found.'], 404);
+        }
+
+        $total = $invoice->details
+            ->filter(fn($d) => is_null($d->deleted_at))
+            ->sum('price');
+
+        $invoice->total_amount = $total;
+        $invoice->save();
+
+        return response()->json([
+            'message' => 'Invoice total recalculated successfully.',
+            'invoice_id' => $invoice->invoice_id,
+            'total_amount' => $invoice->total_amount,
+        ]);
     }
+
+    //Invoice for all
+
+    public function recalculateAllInvoices()
+{
+    $invoices = Invoice::with('details')->get();
+
+    foreach ($invoices as $invoice) {
+        $total = $invoice->details
+            ->filter(fn($d) => is_null($d->deleted_at))
+            ->sum('price');
+
+        $invoice->total_amount = $total;
+        $invoice->save();
+    }
+
+    return response()->json([
+        'message' => 'All invoice totals recalculated successfully.',
+        'count' => $invoices->count(),
+    ]);
+}
+
 }

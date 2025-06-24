@@ -88,7 +88,7 @@
 
         <a href="{{ route('dashboard') }}"><i class="fas fa-tachometer-alt me-2"></i> Dashboard</a>
         <a href="{{ route('order') }}"><i class="fas fa-receipt me-2"></i> Available Menus</a>
-        <a href="{{ route('menu') }}"><i class="fas fa-utensils me-2"></i> Menu</a>
+        <a href="{{ route('menu') }}"><i class="fas fa-utensils me-2"></i> Menus</a>
         <a href="{{ route('holidays') }}"><i class="fa-solid fa-sun"></i> Holidays</a>
         <a href="{{ route('cusmang') }}"><i class="fas fa-users me-2"></i> Customer</a>
         <a href="{{ route('invoices') }}"><i class="fas fa-file-invoice-dollar me-2"></i> Invoices</a>

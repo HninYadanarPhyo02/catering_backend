@@ -8,6 +8,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Illuminate\Support\Facades\Log;
 
 class EmployeeImport implements ToCollection,WithHeadingRow
 {
@@ -16,45 +17,32 @@ class EmployeeImport implements ToCollection,WithHeadingRow
     */
     public Collection $rows;
 
-    // public function __construct()
-    // {
-    //     $this->rows = collect();
-    // }
 
-    // public function collection(Collection $collection)
-    // {
-    //     // $collection->shift(); // remove header if needed
-    //     // dd($collection);
-        
-    //     foreach ($collection as $row) {
-    //     $lastEmployee = Employee::orderBy('emp_id', 'desc')->first();
-
-    //     // If no employees yet, start from 1
-    //     $lastNumber = $lastEmployee ? intval(substr($lastEmployee->emp_id, 4)) : 0;
-    //     $newNumber = $lastNumber + 1;
-    //     $newEmpId = 'emp_' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
-    //         Employee::create([
-                
-    //             'emp_id' => $newEmpId,
-    //             'name' => $row['name'],
-    //             'email' => $row['email'],
-    //             'password' => Hash::make('password1234'),
-    //             // 'department' => $row[3] ?? null,
-    //         ]);
-    //     }
-//     public function collection(Collection $collection)
+//This is old code
+// public function collection(Collection $collection)
 // {
 //     $lastEmployee = Employee::orderBy('emp_id', 'desc')->first();
 //     $lastNumber = $lastEmployee ? intval(substr($lastEmployee->emp_id, 4)) : 0;
-    
 
 //     $employeesData = [];
 
+//     // Fetch all existing emails once to avoid querying DB inside the loop
+//     $existingEmails = Employee::pluck('email')->map(function ($email) {
+//         return strtolower(trim($email));
+//     })->toArray();
+
+//     $seenEmails = []; // to prevent duplicates within the uploaded file
+
 //     foreach ($collection as $row) {
-//         // Skip rows with missing name or email
-//         if (empty($row['name']) || empty($row['email'])) {
+//         $name = isset($row['name']) ? trim($row['name']) : null;
+//         $email = isset($row['email']) ? strtolower(trim($row['email'])) : null;
+
+//         // Skip if name/email is missing or duplicated
+//         if (empty($name) || empty($email) || in_array($email, $seenEmails) || in_array($email, $existingEmails)) {
 //             continue;
 //         }
+
+//         $seenEmails[] = $email;
 
 //         $lastNumber++;
 //         $newEmpId = 'emp_' . str_pad($lastNumber, 4, '0', STR_PAD_LEFT);
@@ -62,46 +50,70 @@ class EmployeeImport implements ToCollection,WithHeadingRow
 //         $employeesData[] = [
 //             'id' => (string) Str::uuid(),
 //             'emp_id' => $newEmpId,
-//             'name' => $row['name'],
-//             'email' => $row['email'],
-//             'password' => Hash::make('password123'),
+//             'name' => $name,
+//             'email' => $email,
+//             'password' => Hash::make('emp123'),
 //             'role' => 'employee',
 //         ];
 //     }
 
-//     // Only insert if we have valid data
 //     if (!empty($employeesData)) {
 //         Employee::insert($employeesData);
+
+//         return response()->json([
+//         'isSuccess' => true,
+//         'message' => 'Import completed.',
+//         'imported_count' => count($employeesData),
+//     ],200);
 //     }
+//     return response()->json([
+//         'isSuccess' => false,
+//         'message' => 'No valid employee data to import.'
+//     ], 404);
+    
 // }
 
-
-//     //     return response()->json([
-//     //     'message' => 'File uploaded and data imported successfully',
-//     //     'imported_count' => $collection,
-//     // ]);
-//     
-
+//This is new code
 public function collection(Collection $collection)
 {
-    $lastEmployee = Employee::orderBy('emp_id', 'desc')->first();
+    // Get the last emp_id number, e.g., emp_0010 => 10
+    $lastEmployee = Employee::withTrashed()
+        ->orderByRaw("CAST(SUBSTRING(emp_id, 5) AS UNSIGNED) DESC")
+        ->first();
+
     $lastNumber = $lastEmployee ? intval(substr($lastEmployee->emp_id, 4)) : 0;
 
     $employeesData = [];
 
-    // Fetch all existing emails once to avoid querying DB inside the loop
-    $existingEmails = Employee::pluck('email')->map(function ($email) {
-        return strtolower(trim($email));
-    })->toArray();
+    // Fetch all existing emails (including soft-deleted ones)
+    $existingEmails = Employee::withTrashed()
+        ->pluck('email')
+        ->map(fn($email) => strtolower(trim($email)))
+        ->toArray();
 
-    $seenEmails = []; // to prevent duplicates within the uploaded file
+    $seenEmails = []; // to prevent duplicates within the file
 
     foreach ($collection as $row) {
         $name = isset($row['name']) ? trim($row['name']) : null;
         $email = isset($row['email']) ? strtolower(trim($row['email'])) : null;
 
-        // Skip if name/email is missing or duplicated
-        if (empty($name) || empty($email) || in_array($email, $seenEmails) || in_array($email, $existingEmails)) {
+        // Skip if name or email is missing
+        if (empty($name) || empty($email)) {
+            continue;
+        }
+
+        // Restore soft-deleted user if email matches
+        $existing = Employee::withTrashed()->where('email', $email)->first();
+
+        if ($existing) {
+            if ($existing->trashed()) {
+                $existing->restore(); // Bring back the soft-deleted user
+            }
+            continue; // Skip inserting, already exists
+        }
+
+        // Skip if already seen in current import batch
+        if (in_array($email, $seenEmails)) {
             continue;
         }
 
@@ -115,104 +127,19 @@ public function collection(Collection $collection)
             'emp_id' => $newEmpId,
             'name' => $name,
             'email' => $email,
-            'password' => Hash::make('emp123'),
+            'password' => Hash::make('emp123'), // default password
             'role' => 'employee',
+            'created_at' => now(),
+            'updated_at' => now(),
         ];
     }
 
+    // Insert new records if any
     if (!empty($employeesData)) {
         Employee::insert($employeesData);
-
-        return response()->json([
-        'isSuccess' => true,
-        'message' => 'Import completed.',
-        'imported_count' => count($employeesData),
-    ],200);
     }
-    return response()->json([
-        'isSuccess' => false,
-        'message' => 'No valid employee data to import.'
-    ], 404);
-    
 }
+
 }
-//     // Optional JSON response for API endpoint
-//     // return response()->json([
-//     //     'message' => 'File uploaded and data imported successfully',
-//     //     'imported_count' => count($employeesData),
-//     // ]);
-// }
-// 
-// public function collection(Collection $collection)
-// {
-//     $lastEmployee = Employee::orderBy('emp_id', 'desc')->first();
-//     $lastNumber = $lastEmployee ? intval(substr($lastEmployee->emp_id, 4)) : 0;
 
-//     $employeesData = [];
-
-//     $existingEmails = Employee::pluck('email')->map(function ($email) {
-//         return strtolower(trim($email));
-//     })->toArray();
-
-//     $seenEmails = [];
-
-//     foreach ($collection as $row) {
-//         $name = isset($row['name']) ? trim($row['name']) : null;
-//         $email = isset($row['email']) ? strtolower(trim($row['email'])) : null;
-
-//         // If name or email is empty
-//         if (empty($name) || empty($email)) {
-//             return response()->json([
-//                 'status' => 'error',
-//                 'message' => 'Name or email is missing in the uploaded file.',
-//                 'row' => $row
-//             ], 404);
-//         }
-
-//         // If email is duplicate in file or DB
-//         if (in_array($email, $seenEmails)) {
-//             return response()->json([
-//                 'status' => 'error',
-//                 'message' => "Duplicate email found in uploaded file: $email"
-//             ], 404);
-//         }
-
-//         if (in_array($email, $existingEmails)) {
-//             return response()->json([
-//                 'status' => 'error',
-//                 'message' => "Email already exists in database: $email"
-//             ], 404);
-//         }
-
-//         $seenEmails[] = $email;
-
-//         $lastNumber++;
-//         $newEmpId = 'emp_' . str_pad($lastNumber, 4, '0', STR_PAD_LEFT);
-
-//         $employeesData[] = [
-//             'id' => (string) Str::uuid(),
-//             'emp_id' => $newEmpId,
-//             'name' => $name,
-//             'email' => $email,
-//             'password' => Hash::make('password123'),
-//             'role' => 'employee',
-//         ];
-//     }
-
-//     if (!empty($employeesData)) {
-//         Employee::insert($employeesData);
-
-//         return response()->json([
-//             'status' => 'success',
-//             'message' => 'Employees imported successfully.',
-//             'imported_count' => count($employeesData)
-//         ]);
-//     }
-
-//     return response()->json([
-//         'status' => 'error',
-//         'message' => 'No valid employee data to import.'
-//     ], 404);
-// }
-// }
 

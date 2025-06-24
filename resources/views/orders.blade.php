@@ -21,8 +21,11 @@
                 <div class="row g-4 align-items-center">
                     <!-- Total Price -->
                     <div class="col-md-6">
-                        <label for="price" class="form-label fw-semibold">Total Price (Kyat)</label>
-                        <input type="number" name="price" id="price" class="form-control" placeholder="e.g. 5000" required min="0">
+                        <label for="price" class="form-label fw-semibold">Unit Price (Kyat)</label>
+                        <input type="number" name="price" id="price" class="form-control" placeholder="e.g. 5000"
+                            required min="0" step="1"
+                            oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+
                     </div>
                 </div>
 
@@ -34,7 +37,7 @@
                             <div class="row g-3 align-items-end">
                                 <div class="col-md-5">
                                     <select name="items[0][food_id]" class="form-select" required>
-                                        <option value="">Select a food item...</option>
+                                        <option value="" disabled selected>Select a food item...</option>
                                         @foreach ($foods as $food)
                                         <option value="{{ $food->food_id }}">{{ $food->name }}</option>
                                         @endforeach
@@ -107,7 +110,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($orders as $order)
+                        @forelse ($orders->sortBy('date') as $order)
                         <tr class="text-center">
                             <td class="fw-semibold text-start">{{ $order->food_name }}</td>
                             <td>{{ number_format($order->price) }}</td>

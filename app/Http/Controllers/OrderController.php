@@ -4,12 +4,13 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use App\Models\Holiday;
+use App\Models\Invoice;
 use App\Models\FoodMenu;
 use App\Models\Attendance;
 use App\Models\Announcement;
 use Illuminate\Http\Request;
-use App\Models\FoodMonthPrice;
 use App\Models\InvoiceDetail;
+use App\Models\FoodMonthPrice;
 use App\Models\RegisteredOrder;
 use Illuminate\Support\Facades\DB;
 
@@ -184,57 +185,63 @@ class OrderController extends Controller
     }
 
     // Delete an order
-    // public function destroy(FoodMonthPrice $order)
-    // {
-    //     $date = $order->date;
-    //     $food_name = $order->food_name;
-    //     $order->delete();
 
-    //     return redirect('orders.index')->with('success', "$date with $food_name is deleted successfully.");
-    // }
-    // public function destroy($date)
-    // {
-    //     $order = FoodMonthPrice::findOrFail($date);
-    //     $order->delete();
-
-
-    // }
     // public function destroyByDate($date)
     // {
-    //     $order = FoodMonthPrice::whereDate('date', $date)->first();
-
-    //     if (!$order) {
-    //         return redirect()->back()->with('error', "No order found for date: $date");
+    //     $food = FoodMonthPrice::whereDate('date', $date)->first();
+    //     if (!$food) {
+    //         return response()->json(['message' => 'Food item not found'], 404);
     //     }
 
-    //     $order->delete();
+    //     $dateOnly = Carbon::parse($food->date)->toDateString();
+    //     // Debug: Make sure records exist
+    //     $rawOrders = DB::table('registered_order')->whereDate('date', $dateOnly)->get();
+    
+    //     if ($rawOrders->isEmpty()) {
+    //         return response()->json(['message' => 'No matching Registered Orders found'], 404);
+    //     }
+
+    //     // Delete or force delete
+    //     RegisteredOrder::whereDate('date', $dateOnly)->delete(); // or ->forceDelete() if needed
+    //     Attendance::whereDate('date', $dateOnly)->delete();
+    //     InvoiceDetail::whereDate('date', $dateOnly)->delete();
+    //     $food->delete();
 
     //     return redirect('/orders')->with('success', "Order on $date deleted successfully.");
     // }
     public function destroyByDate($date)
-    {
-        $food = FoodMonthPrice::whereDate('date', $date)->first();
-        if (!$food) {
-            return response()->json(['message' => 'Food item not found'], 404);
-        }
-
-        $dateOnly = Carbon::parse($food->date)->toDateString();
-        // Debug: Make sure records exist
-        $rawOrders = DB::table('registered_order')->whereDate('date', $dateOnly)->get();
-    // dd([
-    //     'dateOnly' => $dateOnly,
-    //     'rawOrders' => $rawOrders,
-    // ]);
-        if ($rawOrders->isEmpty()) {
-            return response()->json(['message' => 'No matching Registered Orders found'], 404);
-        }
-
-        // Delete or force delete
-        RegisteredOrder::whereDate('date', $dateOnly)->delete(); // or ->forceDelete() if needed
-        Attendance::whereDate('date', $dateOnly)->delete();
-        InvoiceDetail::whereDate('date', $dateOnly)->delete();
-        $food->delete();
-
-        return redirect('/orders')->with('success', "Order on $date deleted successfully.");
+{
+    $food = FoodMonthPrice::whereDate('date', $date)->first();
+    if (!$food) {
+        return response()->json(['message' => 'Food item not found'], 404);
     }
+
+    $dateOnly = Carbon::parse($food->date)->toDateString();
+
+    $rawOrders = DB::table('registered_order')->whereDate('date', $dateOnly)->get();
+    if ($rawOrders->isEmpty()) {
+        return response()->json(['message' => 'No matching Registered Orders found'], 404);
+    }
+
+    // Delete related records
+    RegisteredOrder::whereDate('date', $dateOnly)->delete();
+    Attendance::whereDate('date', $dateOnly)->delete();
+    
+    // Get all invoice_ids affected BEFORE deletion
+    $invoiceIds = InvoiceDetail::whereDate('date', $dateOnly)->pluck('invoice_id')->unique();
+
+    // Delete invoice_details
+    InvoiceDetail::whereDate('date', $dateOnly)->delete();
+
+    // Recalculate total_amount for each invoice
+    foreach ($invoiceIds as $invoiceId) {
+        $newTotal = InvoiceDetail::where('invoice_id', $invoiceId)->sum('price');
+        Invoice::where('invoice_id', $invoiceId)->update(['total_amount' => $newTotal]);
+    }
+
+    $food->delete();
+
+    return redirect('/orders')->with('success', "Order on $date deleted successfully.");
+}
+
 }

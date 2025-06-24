@@ -189,6 +189,76 @@ class EmployeeController extends Controller
     }
 
 
+    // public function updateforAdmin(Request $request, $admin_id)
+    // {
+    //     $employee = Employee::where('emp_id', $admin_id)->first();
+
+    //     if (!$employee) {
+    //         return response()->json(['message' => 'Employee not found'], 404);
+    //     }
+
+    //     $request->validate([
+    //         'name'  => 'required|string|max:255',
+    //         'email' => 'required|email|unique:employee,email,' . $employee->emp_id . ',emp_id',
+    //         'role'  => 'required|in:admin,employee',
+    //     ]);
+
+    //     $newRole = $request->role;
+    //     $roleChanged = $newRole !== $employee->role;
+
+    //     // If role changed, regenerate emp_id and set default password
+    //     if ($roleChanged) {
+    //         if ($newRole === 'admin') {
+    //             $lastAdmin = Employee::where('role', 'admin')
+    //                 ->where('emp_id', 'like', 'admin_%')
+    //                 ->orderByRaw("CAST(SUBSTRING(emp_id, 7) AS UNSIGNED) DESC")
+    //                 ->first();
+
+    //             $lastNumber = $lastAdmin ? intval(substr($lastAdmin->emp_id, 6)) : 0;
+    //             $employee->emp_id = 'admin_' . str_pad($lastNumber + 1, 2, '0', STR_PAD_LEFT);
+    //             $employee->password = Hash::make('admin123');
+    //         } else {
+    //             $lastEmp = Employee::where('role', 'employee')
+    //                 ->where('emp_id', 'like', 'emp_%')
+    //                 ->orderByRaw("CAST(SUBSTRING(emp_id, 5) AS UNSIGNED) DESC")
+    //                 ->first();
+
+    //             $lastNumber = $lastEmp ? intval(substr($lastEmp->emp_id, 4)) : 0;
+    //             $employee->emp_id = 'emp_' . str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
+    //             $employee->password = Hash::make('emp123');
+    //         }
+    //     } else {
+    //         // Optional password change only if all fields are provided
+    //         if (
+    //             $request->filled('old_password') &&
+    //             $request->filled('new_password') &&
+    //             $request->filled('new_password_confirmation')
+    //         ) {
+    //             if (!Hash::check($request->old_password, $employee->password)) {
+    //                 return response()->json(['message' => 'Old password is incorrect'], 403);
+    //             }
+
+    //             if ($request->new_password !== $request->new_password_confirmation) {
+    //                 return response()->json(['message' => 'New password confirmation does not match'], 422);
+    //             }
+
+    //             $employee->password = Hash::make($request->new_password);
+    //         }
+    //     }
+
+    //     // Always update these fields
+    //     $employee->name  = $request->name;
+    //     $employee->email = $request->email;
+    //     $employee->role  = $newRole;
+
+    //     $employee->save();
+
+    //     return response()->json([
+    //         'message' => 'Employee updated successfully',
+    //         'employee' => $employee,
+    //     ], 200);
+    // }
+
     public function updateforAdmin(Request $request, $admin_id)
     {
         $employee = Employee::where('emp_id', $admin_id)->first();
@@ -206,8 +276,14 @@ class EmployeeController extends Controller
         $newRole = $request->role;
         $roleChanged = $newRole !== $employee->role;
 
-        // If role changed, regenerate emp_id and set default password
+        // If role changed, delete associated data and regenerate emp_id and password
         if ($roleChanged) {
+            // Delete associated records using the old emp_id
+            RegisteredOrder::where('emp_id', $employee->emp_id)->delete();
+            Attendance::where('emp_id', $employee->emp_id)->delete();
+            Feedback::where('emp_id', $employee->emp_id)->delete();
+            Invoice::where('emp_id', $employee->emp_id)->delete();
+
             if ($newRole === 'admin') {
                 $lastAdmin = Employee::where('role', 'admin')
                     ->where('emp_id', 'like', 'admin_%')
@@ -228,7 +304,7 @@ class EmployeeController extends Controller
                 $employee->password = Hash::make('emp123');
             }
         } else {
-            // Optional password change only if all fields are provided
+            // Optional password change if old, new, and confirmation are all present
             if (
                 $request->filled('old_password') &&
                 $request->filled('new_password') &&
@@ -246,7 +322,7 @@ class EmployeeController extends Controller
             }
         }
 
-        // Always update these fields
+        // Update common fields
         $employee->name  = $request->name;
         $employee->email = $request->email;
         $employee->role  = $newRole;

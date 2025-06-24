@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -11,7 +12,10 @@ use Laravel\Sanctum\HasApiTokens;
 
 class Employee extends Authenticatable
 {
-    use Notifiable, HasApiTokens;
+    use Notifiable, HasApiTokens, SoftDeletes;
+
+    // If you're protecting fields, add 'deleted_at' to fillable or guarded as needed
+    protected $dates = ['deleted_at'];
 
     protected $primaryKey = 'emp_id';
     public $incrementing = false;  // important for non-numeric keys

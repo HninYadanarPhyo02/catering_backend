@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Invoice;
 use App\Models\Attendance;
 use App\Models\Announcement;
 use Illuminate\Http\Request;
-use App\Models\FoodMonthPrice;
 use App\Models\InvoiceDetail;
+use App\Models\FoodMonthPrice;
 use App\Models\RegisteredOrder;
 
 class AnnouncementController extends Controller
@@ -49,15 +50,33 @@ class AnnouncementController extends Controller
 
     // public function store(Request $request)
     // {
-    //     $request->validate([
+    //     // 1. Validate input
+    //     $validated = $request->validate([
     //         'title' => 'required|string|max:255',
     //         'date' => 'required|date',
     //         'text' => 'required|string',
     //     ]);
 
-    //     Announcement::create($request->only(['title', 'date', 'text']));
+    //     // 2. Check if announcement already exists for the date
+    //     $existingAnnouncement = Announcement::whereDate('date', $validated['date'])->first();
+    //     if ($existingAnnouncement) {
+    //         return redirect()->back()
+    //             ->withInput()
+    //             ->withErrors(['date' => 'An announcement for this date already exists. You cannot create another one.']);
+    //     }
 
-    //     return redirect()->route('announcement')->with('success', 'Announcement created successfully.');
+    //     // 3. Create announcement
+    //     $announcement = Announcement::create($validated);
+
+    //     // 4. Soft delete related records
+    //     RegisteredOrder::whereDate('date', $validated['date'])->delete();
+    //     Attendance::whereDate('date', $validated['date'])->delete();
+    //     FoodMonthPrice::whereDate('date', $validated['date'])->delete();
+    //     InvoiceDetail::whereDate('date', $validated['date'])->delete();
+
+    //     // 5. Redirect back with success message
+    //     return redirect()->route('announcement')
+    //         ->with('success', 'Announcement successfully created. All related records on the announced date have been soft deleted.');
     // }
 
     public function store(Request $request)
@@ -84,11 +103,26 @@ class AnnouncementController extends Controller
         RegisteredOrder::whereDate('date', $validated['date'])->delete();
         Attendance::whereDate('date', $validated['date'])->delete();
         FoodMonthPrice::whereDate('date', $validated['date'])->delete();
+
+        // Soft delete invoice details and get affected invoice IDs
+        $affectedInvoiceDetails = InvoiceDetail::whereDate('date', $validated['date'])->get();
+        $affectedInvoiceIds = $affectedInvoiceDetails->pluck('invoice_id')->unique();
+
         InvoiceDetail::whereDate('date', $validated['date'])->delete();
 
-        // 5. Redirect back with success message
+        // 5. Recalculate total_amount for affected invoices
+        foreach ($affectedInvoiceIds as $invoiceId) {
+            $newTotal = InvoiceDetail::where('invoice_id', $invoiceId)
+                ->whereNull('deleted_at')
+                ->sum('price');
+
+            Invoice::where('invoice_id', $invoiceId)
+                ->update(['total_amount' => $newTotal]);
+        }
+
+        // 6. Redirect back with success message
         return redirect()->route('announcement')
-            ->with('success', 'Announcement successfully created. All related records on the announced date have been soft deleted.');
+            ->with('success', 'Announcement successfully created. All related records on the announced date have been soft deleted and invoice totals updated.');
     }
 
 

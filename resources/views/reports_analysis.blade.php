@@ -119,11 +119,50 @@
             datasets: [{
                 label: 'Items Sold',
                 data: topSellingData,
-                backgroundColor: 'rgba(233, 113, 16, 0.7)'
+                backgroundColor: 'rgba(233, 113, 16, 0.7)',
+                borderRadius: 4
             }]
         },
-        options: commonOptions
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        title: function(tooltipItems) {
+                            return tooltipItems[0].label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        autoSkip: false,
+                        maxRotation: 45,
+                        minRotation: 45,
+                        font: {
+                            size: 10
+                        },
+                        callback: function(value, index, values) {
+                            const label = this.getLabelForValue(value);
+                            return label.length > 15 ? label.substring(0, 15) + '…' : label;
+                        }
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
     });
+
 
     // ✅ Dual Vertical Bars: Registered Orders vs Attendance (last 6 months)
     new Chart(document.getElementById('monthlyTrendChart'), {

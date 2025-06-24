@@ -105,7 +105,7 @@
                     style="background-color:rgb(140, 149, 153); color: black; border: 2px solid rgb(140, 149, 153);">
                     Register
                 </button>
-                <a href="{{ route('login') }}" class="btn btn-outline-secondary px-4 d-flex align-items-center gap-2 shadow-sm">
+                <a href="{{ route('logout') }}" class="btn btn-outline-secondary px-4 d-flex align-items-center gap-2 shadow-sm">
                             <i class="bi bi-arrow-clockwise"></i> Back
                         </a>
             </div>

@@ -63,17 +63,26 @@ class DashboardController extends Controller
         }
 
         // Bar Chart: Top Selling Items from actual registered_order
+        $currentMonth = Carbon::now()->month;
+        $currentYear = Carbon::now()->year;
+
         $results = DB::table('registered_order as ro')
+            ->join('attendance as att', function ($join) {
+                $join->on('ro.emp_id', '=', 'att.emp_id')->on('ro.date', '=', 'att.date');
+            })
             ->join('foodmonthprice as fmp', 'ro.date', '=', 'fmp.date')
-            ->whereNull('fmp.deleted_at')
             ->whereNull('ro.deleted_at')
-            ->select('fmp.food_name', DB::raw('COUNT(ro.date) as total'))
+            ->whereNull('att.deleted_at')
+            ->whereNull('fmp.deleted_at')
+            ->whereYear('ro.date', $currentYear)
+            ->whereMonth('ro.date', $currentMonth)
+            ->select('fmp.food_name', DB::raw('COUNT(*) as total'))
             ->groupBy('fmp.food_name')
             ->pluck('total', 'fmp.food_name');
 
+
         $topItemsLabels = array_keys($results->toArray());
         $topItemsData = array_values($results->toArray());
-
         // Pie Chart: Feedback Ratings Distribution
         $ratingsData = Feedback::selectRaw('rating, COUNT(*) as count')
             ->groupBy('rating')
@@ -83,11 +92,15 @@ class DashboardController extends Controller
 
         $ratingsLabels = array_keys($ratingsData);
         $ratingsCounts = array_values($ratingsData);
-        $monthlyInvoices = Invoice::with('employee') // Make sure the relationship exists
+        $Month = date('n'); // e.g. 7
+        $Year = date('Y');  // e.g. 2025
+
+        $monthlyInvoices = Invoice::with('employee')
+            ->where('month', $Month)
+            ->where('year', $Year)
             ->orderByDesc('year')
             ->orderByDesc('month')
             ->get();
-
         return view('dashboard', compact(
             'totalmenus',
             'monthlymenus',

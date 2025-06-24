@@ -73,68 +73,69 @@
   </form>
 
   {{-- Show message if exists --}}
-@if(isset($message))
-<div class="alert alert-info">{{ $message }}</div>
-@endif
+  @if(isset($message))
+  <div class="alert alert-info">{{ $message }}</div>
+  @endif
 
-{{-- Invoice Records --}}
-@if(isset($invoices) && $invoices->count())
+  {{-- Invoice Records --}}
+  @if(isset($invoices) && $invoices->count())
 
-    {{-- Flexible Send All Button --}}
-    <div class="d-flex justify-content-end mb-3">
-        <form action="{{ route('invoices.send-all') }}" method="POST" onsubmit="return confirm('Are you sure you want to send invoices to all employees who ordered this month?')">
-            @csrf
-            <button type="submit" class="btn btn-danger d-flex align-items-center gap-2 shadow-sm">
-                <i class="fas fa-paper-plane"></i> Send All Invoices
-            </button>
-        </form>
+  {{-- Flexible Send All Button --}}
+  <div class="d-flex justify-content-end mb-3">
+    <form action="{{ route('invoices.send-all') }}" method="POST" onsubmit="return confirm('Are you sure you want to send invoices to all employees who ordered this month?')">
+      @csrf
+      <button type="submit" class="btn btn-success d-flex align-items-center gap-2 shadow-sm">
+        <i class="fas fa-paper-plane"></i> Send All Invoices
+      </button>
+
+    </form>
+  </div>
+
+  @foreach($invoices as $invoice)
+  <div class="card mb-4 shadow-sm">
+    <div class="card-header bg-light fw-bold">
+      {{ $invoice['emp_id'] }} - {{ $invoice['emp_name'] }} ({{ $invoice['emp_email'] }})
     </div>
-
-    @foreach($invoices as $invoice)
-    <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-light fw-bold">
-            {{ $invoice['emp_id'] }} - {{ $invoice['emp_name'] }} ({{ $invoice['emp_email'] }})
-        </div>
-        <div class="card-body">
-            <table class="table table-bordered align-middle">
-                <thead class="table-secondary">
-                    <tr>
-                        <th>Date</th>
-                        <th>Food Name</th>
-                        <th>Price</th>
-                        <th>Status</th>
-                        <th>Check Out</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($invoice['attendances'] as $record)
-                    <tr>
-                        <td>{{ $record['date'] }}</td>
-                        <td>{{ $record['food_name'] }}</td>
-                        <td>{{ number_format($record['price'], 2) }}</td>
-                        <td>{{ ucfirst($record['status']) }}</td>
-                        <td>{{ $record['check_out'] ?? '-' }}</td>
-                    </tr>
-                    @endforeach
-                </tbody>
-                <tfoot class="table-light">
-                    <tr>
-                        <td colspan="4" class="text-end fw-bold">Total Amount:</td>
-                        <td class="fw-bold text-success">{{ number_format($invoice['total_amount'], 2) }} Kyats</td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
+    <div class="card-body">
+      <table class="table table-bordered align-middle">
+        <thead class="table-secondary">
+          <tr>
+            <th>Date</th>
+            <th>Food Name</th>
+            <th>Price</th>
+            <th>Status</th>
+            <th>Check Out</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach($invoice['attendances'] as $record)
+          <tr>
+            <td>{{ $record['date'] }}</td>
+            <td>{{ $record['food_name'] }}</td>
+            <td>{{ number_format($record['price'], 2) }}</td>
+            <td>{{ ucfirst($record['status']) }}</td>
+            <td>{{ $record['check_out'] ?? '-' }}</td>
+          </tr>
+          @endforeach
+        </tbody>
+        <tfoot class="table-light">
+          <tr>
+            <td colspan="4" class="text-end fw-bold">Total Amount:</td>
+            <td class="fw-bold text-success">{{ number_format($invoice['total_amount'], 2) }} Kyats</td>
+          </tr>
+        </tfoot>
+      </table>
     </div>
-    @endforeach
+  </div>
+  @endforeach
 
-    {{-- Pagination --}}
-    <div class="d-flex justify-content-center">
-        {{ $invoices->withQueryString()->links() }}
-    </div>
-@else
-    <p class="text-muted">No invoice records available.</p>
-@endif
+  {{-- Pagination --}}
+  <div class="d-flex justify-content-center">
+    {{ $invoices->withQueryString()->links() }}
+  </div>
+  @else
+  <p class="text-muted">No invoice records available.</p>
+  @endif
 
 </div>
 @endsection

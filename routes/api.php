@@ -103,6 +103,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/invoices/{invoice_id}', [InvoiceController::class, 'show']);
     Route::get('/invoices', [InvoiceController::class, 'index']);
     Route::post('/invoices/generate', [InvoiceController::class, 'generateInvoice']);
+    Route::post('/invoices/{invoice_id}/recalculate-total', [InvoiceController::class, 'recalculateInvoiceTotal']);
+    // Route::post('/invoices/recalculate-all', [InvoiceController::class, 'recalculateAllInvoices']);
+    Route::post('/invoices/recalculate-all', [InvoiceController::class, 'recalculateAllInvoices']);
+
     //Holiday
     Route::post('/holidays/import', [HolidayController::class, 'importBase64']);
 

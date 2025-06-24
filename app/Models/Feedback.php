@@ -3,12 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Sanctum\HasApiTokens;
 
 class Feedback extends Model
 {
-    use HasApiTokens;
-
+    use HasApiTokens, SoftDeletes;
+    protected $dates = ['deleted_at'];
     protected $table= 'feedback';
     protected $primaryKey = 'fb_id';  // Tell Laravel the primary key is 'fb_id'
 

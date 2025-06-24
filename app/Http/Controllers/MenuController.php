@@ -14,15 +14,36 @@ class MenuController extends Controller
     public function index()
     {
         // $menus = FoodMenu::all();
-         $menus = FoodMenu::orderBy('created_at', 'desc')->paginate(5);
-        return view('menus.index', compact('menus'));
+        $menus = FoodMenu::orderBy('created_at', 'desc')->paginate(5);
+        $menuCount = FoodMenu::count();
+        return view('menus.index', compact('menus','menuCount'));
     }
-
     // public function store(Request $request)
     // {
-    //     $request->validate(['name' => 'required|string|max:255']);
-    //     FoodMenu::create($request->only('name'));
-    //     return redirect()->route('menus.index')->with('success', 'Menu added!');
+    //     $request->validate([
+    //         'name' => 'required|string',
+    //     ]);
+
+    //     $existingFood = FoodMenu::whereRaw('LOWER(name) = ?', [strtolower($request->name)])->first();
+
+    //     if ($existingFood) {
+    //         // Redirect back with input and flash error message
+    //         return redirect()->back()->with('error', 'This curry is already existed');
+    //     }
+
+    //     // Generate new food_id logic here...
+    //     $lastMenu = FoodMenu::orderByRaw("CAST(SUBSTRING(food_id, 6) AS UNSIGNED) DESC")->first();
+    //     $lastNumber = $lastMenu ? intval(substr($lastMenu->food_id, 5)) : 0;
+    //     $newNumber = $lastNumber + 1;
+    //     $newFoodId = 'food_' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+
+    //     // Create new food menu item
+    //     FoodMenu::create([
+    //         'food_id' => $newFoodId,
+    //         'name' => $request->name,
+    //     ]);
+
+    //     return redirect()->route('menus.index')->with('success', "$request->name is added!");
     // }
     public function store(Request $request)
     {
@@ -30,30 +51,36 @@ class MenuController extends Controller
             'name' => 'required|string',
         ]);
 
-        $existingFood = FoodMenu::whereRaw('LOWER(name) = ?', [strtolower($request->name)])->first();
+        $nameLower = strtolower($request->name);
+
+        // Search for existing (including soft-deleted) food
+        $existingFood = FoodMenu::withTrashed()
+            ->whereRaw('LOWER(name) = ?', [$nameLower])
+            ->first();
 
         if ($existingFood) {
-            // Redirect back with input and flash error message
+            if ($existingFood->trashed()) {
+                // Restore the soft-deleted item instead of creating a new one
+                $existingFood->restore();
+
+                return redirect()->route('menus.index')->with('success', "{$existingFood->name} has been restored!");
+            }
+
             return redirect()->back()->with('error', 'This curry is already existed');
         }
 
-        // Generate new food_id logic here...
+        // Generate new food_id
         $lastMenu = FoodMenu::orderByRaw("CAST(SUBSTRING(food_id, 6) AS UNSIGNED) DESC")->first();
         $lastNumber = $lastMenu ? intval(substr($lastMenu->food_id, 5)) : 0;
-        $newNumber = $lastNumber + 1;
-        $newFoodId = 'food_' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+        $newFoodId = 'food_' . str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
 
-        // Create new food menu item
         FoodMenu::create([
             'food_id' => $newFoodId,
             'name' => $request->name,
         ]);
 
-        return redirect()->route('menus.index')->with('success', "$request->name is added!");
+        return redirect()->route('menus.index')->with('success', "{$request->name} is added!");
     }
-
-
-
 
     public function edit(FoodMenu $menu)
     {

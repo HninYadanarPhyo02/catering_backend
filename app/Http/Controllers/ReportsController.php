@@ -129,12 +129,11 @@ class ReportsController extends Controller
     //     ->groupBy('month')
     //     ->pluck('count', 'month')
     //     ->toArray();
-    $userActivityRaw = RegisteredOrder::selectRaw("MONTH(date) as month, COUNT(DISTINCT emp_id) as count")
+   $userActivityRaw = RegisteredOrder::selectRaw("MONTH(date) as month, COUNT(DISTINCT emp_id) as count")
     ->whereYear('date', date('Y'))
     ->groupBy('month')
     ->pluck('count', 'month')
     ->toArray();
-
 
     $labels = $months;
     $sales = [];
@@ -145,12 +144,13 @@ class ReportsController extends Controller
     }
 
     // 🍔 Top Selling Items (unchanged)
-    $topSellingRaw = FoodMonthPrice::selectRaw('food_name, COUNT(*) as total_sold')
-        ->whereYear('date', date('Y'))
-        ->groupBy('food_name')
-        ->orderByDesc('total_sold')
-        ->limit(5)
-        ->get();
+    $topSellingRaw = DB::table('registered_order as r')
+    ->join('foodmonthprice as f', 'r.date', '=', 'f.date')
+    ->whereYear('r.date', date('Y'))
+    ->groupBy('f.food_name')
+    ->select('f.food_name', DB::raw('COUNT(*) as total_sold'))
+    ->orderByDesc('total_sold')
+    ->get();
 
     $topSellingLabels = $topSellingRaw->pluck('food_name')->toArray();
     $topSellingData = $topSellingRaw->pluck('total_sold')->toArray();

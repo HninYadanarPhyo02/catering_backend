@@ -212,7 +212,35 @@
                     backgroundColor: 'rgba(255, 123, 14, 0.7)'
                 }]
             },
-            options: chartOptions
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: function(tooltipItems) {
+                                return tooltipItems[0].label; // Full label
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45,
+                            callback: function(value) {
+                                return this.getLabelForValue(value).substring(0, 12) + '...';
+                            }
+                        }
+                    },
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
         });
 
 
@@ -288,7 +316,7 @@
                                 {{-- Send Mail Button --}}
                                 <form action="{{ route('invoices.send-mail', $invoice->invoice_id) }}" method="POST" style="display:inline;">
                                     @csrf
-                                    <button type="submit" class="btn btn-sm btn-outline-success" onclick="return confirm('Send invoice email to employee?')">
+                                    <button type="submit" class="btn btn-sm btn-outline-success" onclick="return confirm('Send invoice email to {{ $invoice->employee->name }}?')">
                                         Send Invoice
                                     </button>
                                 </form>

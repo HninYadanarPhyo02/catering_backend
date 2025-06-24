@@ -2,54 +2,19 @@
 
 namespace App\Http\Controllers\Api\Auth;
 
+use App\Models\Invoice;
+use App\Models\Attendance;
+use App\Models\Announcement;
+use Illuminate\Http\Request;
+use App\Models\InvoiceDetail;
+use App\Models\FoodMonthPrice;
+use App\Models\RegisteredOrder;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\AnnouncementResource;
-use App\Models\Announcement;
-use App\Models\Attendance;
-use App\Models\FoodMonthPrice;
-use App\Models\InvoiceDetail;
-use App\Models\RegisteredOrder;
-use Illuminate\Http\Request;
 
 class AnnouncementController extends Controller
 {
     // public function create(Request $request)
-    // {
-    //     // 1. Validate the announcement data
-    //     $validated = $request->validate([
-    //         'date' => 'required|date',
-    //         'title' => 'required|string|max:255',
-    //         'text' => 'required|string',
-    //     ]);
-
-    //     // 2. Create the new announcement
-    //     $announcement = Announcement::create($validated);
-
-    //     // 3. Soft delete all registered orders for that date
-    //     $affectedOrders = RegisteredOrder::whereDate('date', $validated['date'])->get();
-    //     $affectAttendance = Attendance::whereDate('date', $validated['date'])->get();
-    //     $affectAvailableFood = FoodMonthPrice::whereDate('date', $validated['date'])->get();
-
-    //     if ($affectedOrders->count()) {
-    //         RegisteredOrder::whereDate('date', $validated['date'])->delete();
-    //     }
-    //     if ($affectAttendance->count()) {
-    //         Attendance::whereDate('date', $validated['date'])->delete();
-    //     }
-    //     if ($affectAvailableFood->count()) {
-    //         FoodMonthPrice::whereDate('date', $validated['date'])->delete();
-    //     }
-    //     // Optional: you can log or broadcast to employees about deletion if needed
-
-    //     // 4. Return JSON response
-    //     return response()->json([
-    //         'isSuccess' => true,
-    //         'message' => 'Announcement successfully created. All registered orders on the announced date have been soft deleted.',
-    //         'data' => $announcement,
-    //         'deleted_orders_count' => $affectedOrders->count()
-    //     ], 200);
-    // }
-    //     public function create(Request $request)
     // {
     //     // 1. Validate the announcement data
     //     $validated = $request->validate([
@@ -74,6 +39,7 @@ class AnnouncementController extends Controller
     //     $affectedOrders = RegisteredOrder::whereDate('date', $validated['date'])->get();
     //     $affectAttendance = Attendance::whereDate('date', $validated['date'])->get();
     //     $affectAvailableFood = FoodMonthPrice::whereDate('date', $validated['date'])->get();
+    //     $affectAvailableInvoice = InvoiceDetail::whereDate('date', $validated['date'])->get();
 
     //     if ($affectedOrders->count()) {
     //         RegisteredOrder::whereDate('date', $validated['date'])->delete();
@@ -83,6 +49,9 @@ class AnnouncementController extends Controller
     //     }
     //     if ($affectAvailableFood->count()) {
     //         FoodMonthPrice::whereDate('date', $validated['date'])->delete();
+    //     }
+    //     if ($affectAvailableInvoice->count()) {
+    //         InvoiceDetail::whereDate('date', $validated['date'])->delete();
     //     }
 
     //     // 5. Return success response
@@ -108,39 +77,56 @@ class AnnouncementController extends Controller
             return response()->json([
                 'isSuccess' => false,
                 'message' => 'An announcement for this date already exists. You cannot create another one.'
-            ], 422); // 422 Unprocessable Entity is typical for validation errors
+            ], 422);
         }
 
         // 3. Create the new announcement
         $announcement = Announcement::create($validated);
 
-        // 4. Soft delete all registered orders, attendance, and food prices for that date
+        // 4. Find all related records for the date
         $affectedOrders = RegisteredOrder::whereDate('date', $validated['date'])->get();
-        $affectAttendance = Attendance::whereDate('date', $validated['date'])->get();
-        $affectAvailableFood = FoodMonthPrice::whereDate('date', $validated['date'])->get();
-        $affectAvailableInvoice = InvoiceDetail::whereDate('date', $validated['date'])->get();
+        $affectedAttendance = Attendance::whereDate('date', $validated['date'])->get();
+        $affectedFood = FoodMonthPrice::whereDate('date', $validated['date'])->get();
+        $affectedInvoices = InvoiceDetail::whereDate('date', $validated['date'])->get();
 
-        if ($affectedOrders->count()) {
+        // 5. Soft delete them
+        if ($affectedOrders->isNotEmpty()) {
             RegisteredOrder::whereDate('date', $validated['date'])->delete();
         }
-        if ($affectAttendance->count()) {
+
+        if ($affectedAttendance->isNotEmpty()) {
             Attendance::whereDate('date', $validated['date'])->delete();
         }
-        if ($affectAvailableFood->count()) {
-            FoodMonthPrice::whereDate('date', $validated['date'])->delete();
-        }
-        if ($affectAvailableInvoice->count()) {
+
+        if ($affectedFood->isNotEmpty()) {
             FoodMonthPrice::whereDate('date', $validated['date'])->delete();
         }
 
-        // 5. Return success response
+        if ($affectedInvoices->isNotEmpty()) {
+            InvoiceDetail::whereDate('date', $validated['date'])->delete();
+
+            // 6. Recalculate and update invoice totals
+            $invoiceIds = $affectedInvoices->pluck('invoice_id')->unique();
+
+            foreach ($invoiceIds as $invoiceId) {
+                $newTotal = InvoiceDetail::where('invoice_id', $invoiceId)
+                    ->whereNull('deleted_at')
+                    ->sum('price');
+
+                Invoice::where('invoice_id', $invoiceId)
+                    ->update(['total_amount' => $newTotal]);
+            }
+        }
+
+        // 7. Return JSON response
         return response()->json([
             'isSuccess' => true,
-            'message' => 'Announcement successfully created. All related records on the announced date have been soft deleted.',
+            'message' => 'Announcement successfully created. All related records on the announced date have been soft deleted and invoices updated.',
             'data' => $announcement,
             'deleted_orders_count' => $affectedOrders->count()
-        ], 200);
+        ]);
     }
+
 
 
     public function show($date)

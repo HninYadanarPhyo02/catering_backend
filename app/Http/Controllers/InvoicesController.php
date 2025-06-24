@@ -329,36 +329,68 @@ class InvoicesController extends Controller
 
         return redirect()->route('invoices.index')->with('success', 'Invoice deleted successfully.');
     }
+    // public function sendInvoiceMail($invoice_id)
+    // {
+    //     // Fetch invoice with relations
+    //     $invoice = Invoice::with('employee', 'details')->where('invoice_id', $invoice_id)->first();
+
+    //     if (!$invoice) {
+    //         return back()->with('error', 'Invoice not found.');
+    //     }
+
+    //     if (!$invoice->employee) {
+    //         return back()->with('error', 'Employee not found.');
+    //     }
+
+    //     // Calculate order_count if not present
+    //     $invoice->order_count = $invoice->details->count();
+
+    //     // Calculate total if not present (adjust 'amount' field to your details column)
+    //     if (!isset($invoice->total)) {
+    //         $invoice->total = $invoice->total_amount;
+    //     }
+
+    //     try {
+    //         Mail::to($invoice->employee->email)
+    //             ->send(new MonthlyReportMail($invoice, $invoice->details));
+
+    //         return back()->with('success', 'Invoice email sent successfully to ' . $invoice->employee->email);
+    //     } catch (\Exception $e) {
+    //         return back()->with('error', 'Failed to send email: ' . $e->getMessage());
+    //     }
+    // }
     public function sendInvoiceMail($invoice_id)
-    {
-        // Fetch invoice with relations
-        $invoice = Invoice::with('employee', 'details')->where('invoice_id', $invoice_id)->first();
+{
+    // Fetch invoice with relations
+    $invoice = Invoice::with('employee', 'details')->where('invoice_id', $invoice_id)->first();
 
-        if (!$invoice) {
-            return back()->with('error', 'Invoice not found.');
-        }
-
-        if (!$invoice->employee) {
-            return back()->with('error', 'Employee not found.');
-        }
-
-        // Calculate order_count if not present
-        $invoice->order_count = $invoice->details->count();
-
-        // Calculate total if not present (adjust 'amount' field to your details column)
-        if (!isset($invoice->total)) {
-            $invoice->total = $invoice->total_amount;
-        }
-
-        try {
-            Mail::to($invoice->employee->email)
-                ->send(new MonthlyReportMail($invoice, $invoice->details));
-
-            return back()->with('success', 'Invoice email sent successfully to ' . $invoice->employee->email);
-        } catch (\Exception $e) {
-            return back()->with('error', 'Failed to send email: ' . $e->getMessage());
-        }
+    if (!$invoice) {
+        return back()->with('error', 'Invoice not found.');
     }
+
+    if (!$invoice->employee) {
+        return back()->with('error', 'Employee not found.');
+    }
+
+    // Filter only active details (deleted_at is null)
+    $validDetails = $invoice->details->filter(function ($detail) {
+        return is_null($detail->deleted_at);
+    });
+
+    // Calculate count and total from valid (non-deleted) details
+    $invoice->order_count = $validDetails->count();
+    $invoice->total = $validDetails->sum('price');
+
+    try {
+        Mail::to($invoice->employee->email)
+            ->send(new MonthlyReportMail($invoice, $validDetails));
+
+        return back()->with('success', 'Invoice email sent successfully to ' . $invoice->employee->email);
+    } catch (\Exception $e) {
+        return back()->with('error', 'Failed to send email: ' . $e->getMessage());
+    }
+}
+
     public function sendAllMonthlyInvoices(Request $request)
     {
         $currentMonth = Carbon::now()->month;

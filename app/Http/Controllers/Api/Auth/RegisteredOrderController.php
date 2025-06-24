@@ -16,7 +16,145 @@ use Illuminate\Support\Facades\Validator;
 
 class RegisteredOrderController extends Controller
 {
-   public function store(Request $request)
+    // public function store(Request $request)
+    // {
+    //     $validator = Validator::make($request->all(), [
+    //         'emp_id' => 'required|exists:employee,emp_id',
+    //         'date' => 'required|array|min:1',
+    //         'date.*' => 'required|date',
+    //     ]);
+
+    //     $employee = $request->user();
+    //     $emp_id = $request->emp_id ?? $employee->emp_id;
+
+    //     if ($validator->fails()) {
+    //         return response()->json(['errors' => $validator->errors()], 422);
+    //     }
+
+    //     $orders = [];
+
+    //     DB::beginTransaction();
+    //     try {
+
+    //         foreach ($request->date as $date) {
+    //             // 1. Register Order
+    //             $registeredOrder = RegisteredOrder::register($emp_id, $date);
+
+    //             // 2. Find matching food price
+    //             $foodPrice = FoodMonthPrice::where('date', $date)->first();
+    //             if (!$foodPrice) {
+    //                 throw new \Exception("No food price found for date {$date}");
+    //             }
+
+    //             // 3. Create Attendance
+    //             Attendance::create([
+    //                 'emp_id' => $emp_id,
+    //                 'food_id' => $foodPrice->food_id,
+    //                 'date' => $date,
+    //                 'status' => $request->input('status', 'absent'),
+    //                 'check_out' => $request->input('check_out') ?? false,
+    //             ]);
+
+    //             $orders[] = $registeredOrder;
+    //         }
+
+    //         // Now generate monthly invoices AFTER processing attendance/orders
+    //         $month = now()->month;
+    //         $year = now()->year;
+
+    //         $employees = Employee::all();
+    //         $generatedInvoices = [];
+
+    //         foreach ($employees as $employee) {
+    //             // Find or create invoice for employee for this month/year
+    //             $invoice = Invoice::firstOrCreate(
+    //                 [
+    //                     'emp_id' => $employee->emp_id,
+    //                     'month' => $month,
+    //                     'year' => $year,
+    //                 ],
+    //                 [
+    //                     'invoice_id' => 'inv_' . str_pad(
+    //                         optional(Invoice::latest('id')->first())->id + 1 ?? 1,
+    //                         4,
+    //                         '0',
+    //                         STR_PAD_LEFT
+    //                     ),
+    //                     'total_amount' => 0,
+    //                 ]
+    //             );
+
+    //             // Get attendances with food info for this employee/month
+    //             $attendances = DB::table('attendance')
+    //                 ->join('foodmonthprice', 'attendance.date', '=', 'foodmonthprice.date')
+    //                 ->where('attendance.emp_id', $employee->emp_id)
+    //                 ->whereMonth('attendance.date', $month)
+    //                 ->whereYear('attendance.date', $year)
+    //                 ->whereNull('attendance.deleted_at')
+    //                 ->whereNull('foodmonthprice.deleted_at')
+    //                 ->select(
+    //                     'attendance.date',
+    //                     'attendance.status',
+    //                     'attendance.check_out',
+    //                     'foodmonthprice.food_name',
+    //                     'foodmonthprice.price'
+    //                 )
+    //                 ->get();
+
+    //             if ($attendances->isEmpty()) {
+    //                 continue;
+    //             }
+
+    //             foreach ($attendances as $att) {
+    //                 // Only insert if date doesn't already exist in invoice_details
+    //                 $exists = DB::table('invoice_details')
+    //                     ->where('invoice_id', $invoice->invoice_id)
+    //                     ->where('date', $att->date)
+    //                     ->exists();
+
+    //                 if (!$exists) {
+    //                     $invoice->details()->create([
+    //                         'date' => $att->date,
+    //                         'food_name' => $att->food_name,
+    //                         'price' => $att->price ?? 0,
+    //                         'status' => $att->status,
+    //                         'check_out' => (bool) $att->check_out,
+    //                     ]);
+    //                 }
+    //             }
+
+    //             // Recalculate total_amount
+    //             $total = DB::table('invoice_details')
+    //                 ->where('invoice_id', $invoice->invoice_id)
+    //                 ->sum('price');
+
+    //             $invoice->update(['total_amount' => $total]);
+
+    //             $generatedInvoices[] = $invoice;
+    //         }
+
+    //         DB::commit();
+
+    //         // Fetch invoices by month/year columns, NOT created_at
+    //         $data = Invoice::with('details')
+    //             ->where('month', $month)
+    //             ->where('year', $year)
+    //             ->get();
+
+    //         return response()->json([
+    //             'message' => 'All dates processed successfully and monthly invoices generated.',
+    //             'successful_orders' => $orders,
+    //             'invoices' => InvoicesResource::collection($data),
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         return response()->json([
+    //             'message' => 'An error occurred. All changes rolled back.',
+    //             'error' => $e->getMessage()
+    //         ], 409);
+    //     }
+    // }
+    public function store(Request $request)
 {
     $validator = Validator::make($request->all(), [
         'emp_id' => 'required|exists:employee,emp_id',
@@ -35,17 +173,15 @@ class RegisteredOrderController extends Controller
 
     DB::beginTransaction();
     try {
+        // Step 1: Create Attendance and Registered Orders
         foreach ($request->date as $date) {
-            // 1. Register Order
             $registeredOrder = RegisteredOrder::register($emp_id, $date);
 
-            // 2. Find matching food price
             $foodPrice = FoodMonthPrice::where('date', $date)->first();
             if (!$foodPrice) {
                 throw new \Exception("No food price found for date {$date}");
             }
 
-            // 3. Create Attendance
             Attendance::create([
                 'emp_id' => $emp_id,
                 'food_id' => $foodPrice->food_id,
@@ -57,187 +193,102 @@ class RegisteredOrderController extends Controller
             $orders[] = $registeredOrder;
         }
 
-        // Now generate monthly invoices AFTER processing attendance/orders
-        $month = now()->month;
-        $year = now()->year;
-
+        // Step 2: Generate invoices for all months with attendance
         $employees = Employee::all();
         $generatedInvoices = [];
 
         foreach ($employees as $employee) {
-            // Find or create invoice for employee for this month/year
-            $invoice = Invoice::firstOrCreate(
-                [
-                    'emp_id' => $employee->emp_id,
-                    'month' => $month,
-                    'year' => $year,
-                ],
-                [
-                    'invoice_id' => 'inv_' . str_pad(
-                        optional(Invoice::latest('id')->first())->id + 1 ?? 1,
-                        4,
-                        '0',
-                        STR_PAD_LEFT
-                    ),
-                    'total_amount' => 0,
-                ]
-            );
-
-            // Get attendances with food info for this employee/month
-            $attendances = DB::table('attendance')
-                ->join('foodmonthprice', 'attendance.date', '=', 'foodmonthprice.date')
-                ->where('attendance.emp_id', $employee->emp_id)
-                ->whereMonth('attendance.date', $month)
-                ->whereYear('attendance.date', $year)
-                ->whereNull('attendance.deleted_at')
-                ->whereNull('foodmonthprice.deleted_at')
-                ->select(
-                    'attendance.date',
-                    'attendance.status',
-                    'attendance.check_out',
-                    'foodmonthprice.food_name',
-                    'foodmonthprice.price'
-                )
+            // Get all unique month/year combinations from attendance
+            $monthYears = Attendance::where('emp_id', $employee->emp_id)
+                ->whereNull('deleted_at')
+                ->selectRaw('MONTH(date) as month, YEAR(date) as year')
+                ->distinct()
                 ->get();
 
-            if ($attendances->isEmpty()) {
-                continue;
-            }
+            foreach ($monthYears as $my) {
+                $month = $my->month;
+                $year = $my->year;
 
-            foreach ($attendances as $att) {
-                // Only insert if date doesn't already exist in invoice_details
-                $exists = DB::table('invoice_details')
-                    ->where('invoice_id', $invoice->invoice_id)
-                    ->where('date', $att->date)
-                    ->exists();
+                $invoice = Invoice::firstOrCreate(
+                    [
+                        'emp_id' => $employee->emp_id,
+                        'month' => $month,
+                        'year' => $year,
+                    ],
+                    [
+                        'invoice_id' => 'inv_' . str_pad(
+                            optional(Invoice::latest('id')->first())->id + 1 ?? 1,
+                            4,
+                            '0',
+                            STR_PAD_LEFT
+                        ),
+                        'total_amount' => 0,
+                    ]
+                );
 
-                if (!$exists) {
-                    $invoice->details()->create([
-                        'date' => $att->date,
-                        'food_name' => $att->food_name,
-                        'price' => $att->price ?? 0,
-                        'status' => $att->status,
-                        'check_out' => (bool) $att->check_out,
-                    ]);
+                $attendances = DB::table('attendance')
+                    ->join('foodmonthprice', 'attendance.date', '=', 'foodmonthprice.date')
+                    ->where('attendance.emp_id', $employee->emp_id)
+                    ->whereMonth('attendance.date', $month)
+                    ->whereYear('attendance.date', $year)
+                    ->whereNull('attendance.deleted_at')
+                    ->whereNull('foodmonthprice.deleted_at')
+                    ->select(
+                        'attendance.date',
+                        'attendance.status',
+                        'attendance.check_out',
+                        'foodmonthprice.food_name',
+                        'foodmonthprice.price'
+                    )
+                    ->get();
+
+                foreach ($attendances as $att) {
+                    $exists = DB::table('invoice_details')
+                        ->where('invoice_id', $invoice->invoice_id)
+                        ->where('date', $att->date)
+                        ->exists();
+
+                    if (!$exists) {
+                        $invoice->details()->create([
+                            'date' => $att->date,
+                            'food_name' => $att->food_name,
+                            'price' => $att->price ?? 0,
+                            'status' => $att->status,
+                            'check_out' => (bool) $att->check_out,
+                        ]);
+                    }
                 }
+
+                // Update total amount
+                $total = DB::table('invoice_details')
+                    ->where('invoice_id', $invoice->invoice_id)
+                    ->sum('price');
+
+                $invoice->update(['total_amount' => $total]);
+
+                $generatedInvoices[] = $invoice;
             }
-
-            // Recalculate total_amount
-            $total = DB::table('invoice_details')
-                ->where('invoice_id', $invoice->invoice_id)
-                ->sum('price');
-
-            $invoice->update(['total_amount' => $total]);
-
-            $generatedInvoices[] = $invoice;
         }
 
         DB::commit();
 
-        // Return response including created orders and generated invoices
-        $data = Invoice::with('details')->whereMonth('created_at', $month)->whereYear('created_at', $year)->get();
+        // Fetch all invoices with details
+        $data = Invoice::with('details')->get();
 
         return response()->json([
             'message' => 'All dates processed successfully and monthly invoices generated.',
             'successful_orders' => $orders,
             'invoices' => InvoicesResource::collection($data),
         ]);
-
     } catch (\Exception $e) {
         DB::rollBack();
         return response()->json([
             'message' => 'An error occurred. All changes rolled back.',
-            'error' => $e->getMessage()
+            'error' => $e->getMessage(),
         ], 409);
     }
 }
 
-//     public function store(Request $request)
-// {
-//     $validator = Validator::make($request->all(), [
-//         'emp_id' => 'required|exists:employee,emp_id',
-//         'date' => 'required|array|min:1',
-//         'date.*' => 'required|date',
-//     ]);
-
-//     $employee = $request->user();
-//     $emp_id = $request->emp_id ?? $employee->emp_id;
-
-//     if ($validator->fails()) {
-//         return response()->json(['errors' => $validator->errors()], 422);
-//     }
-
-//     $orders = [];
-
-//     DB::beginTransaction();
-//     try {
-//         foreach ($request->date as $date) {
-//             // 1. Register order
-//             $registeredOrder = RegisteredOrder::register($emp_id, $date);
-
-//             // 2. Get food price
-//             $foodPrice = FoodMonthPrice::whereDate('date', $date)->first();
-//             if (!$foodPrice) {
-//                 throw new \Exception("No food price found for date {$date}");
-//             }
-
-//             // 3. Store attendance
-//             Attendance::create([
-//                 'emp_id' => $emp_id,
-//                 'food_id' => $foodPrice->food_id,
-//                 'date' => $date,
-//                 'status' => $request->input('status', 'absent'),
-//                 'check_out' => $request->input('check_out') ?? false,
-//             ]);
-
-//             // 4. Get month and year
-//             $carbonDate = \Carbon\Carbon::parse($date);
-//             $month = $carbonDate->month;
-//             $year = $carbonDate->year;
-
-//             // 5. Find or create invoice
-//             $invoice = Invoice::firstOrCreate(
-//                 [
-//                     'emp_id' => $emp_id,
-//                     'month' => $month,
-//                     'year' => $year,
-//                 ],
-//                 [
-//                     'invoice_id' => 'inv_' . uniqid(),
-//                     'total_amount' => 0,
-//                 ]
-//             );
-
-//             // 6. Add invoice detail
-//             InvoiceDetail::create([
-//                 'invoice_id' => $invoice->invoice_id,
-//                 'date' => $date,
-//                 'food_name' => $foodPrice->food->name ?? 'Unknown', // assuming relationship
-//                 'price' => $foodPrice->price,
-//                 'status' => $request->input('status', 'absent'),
-//                 'check_out' => $request->input('check_out') ?? false,
-//             ]);
-
-//             // 7. Update total amount
-//             $invoice->increment('total_amount', $foodPrice->price);
-
-//             $orders[] = $registeredOrder;
-//         }
-
-//         DB::commit();
-
-//         return response()->json([
-//             'message' => 'Order, attendance, and invoice details stored successfully.',
-//             'successful' => $orders,
-//         ]);
-//     } catch (\Exception $e) {
-//         DB::rollBack();
-//         return response()->json([
-//             'message' => 'An error occurred. All changes rolled back.',
-//             'error' => $e->getMessage()
-//         ], 409);
-//     }
-// }
 
     public function lists()
     {

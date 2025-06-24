@@ -35,42 +35,60 @@ class CustomersController extends Controller
         return view('customers.index', compact('customers'));
     }
 
-
-    // public function index()
+    //     public function store(Request $request)
     // {
-    //     // Fetch customers with pagination (10 per page)
-    //     $customers = Employee::orderBy('created_at', 'desc')->paginate(5);
+    //     $request->validate([
+    //         'name'  => 'required|string|max:255',
+    //         'email' => 'required|email|unique:employee,email',
+    //     ]);
 
-    //     // Pass them to the view
-    //     return view('customers.index', compact('customers'));
+    //     // Generate unique emp_id
+    //     $newNumber = 1;
+    //     do {
+    //         $newEmpId = 'emp_' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+    //         $exists = Employee::where('emp_id', $newEmpId)->exists();
+    //         $newNumber++;
+    //     } while ($exists);
+
+    //     Employee::create([
+    //         'id' => (string) Str::uuid(),
+    //         'emp_id' => $newEmpId,
+    //         'name'  => $request->name,
+    //         'email' => $request->email,
+    //         'password' => Hash::make('emp123'),
+    //     ]);
+
+    //     return redirect()->route('customers.index')->with('success', 'New customer is added successfully.');
     // }
-
     public function store(Request $request)
     {
-        // dd($request->all());
-        $lastId = Employee::orderByRaw("CAST(SUBSTRING(emp_id, 5) AS UNSIGNED) DESC")->first();
-        $lastNumber = $lastId ? intval(substr($lastId->emp_id, 4)) : 0;
-        $newNumber = $lastNumber + 1;
-        $newEmpId = 'emp_' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
-
-        // $lastEmployee = Employee::orderBy('created_at', 'desc')->first();
-        // $lastEmpId = $lastEmployee ? intval(substr($lastEmployee->emp_id, 4)) : 0;
-        // $newEmpId = 'emp_' . str_pad($lastEmpId + 1, 4, '0', STR_PAD_LEFT);
-
         $request->validate([
             'name'  => 'required|string|max:255',
-            'email' => 'required|email|unique:employee,email',
+            'email' => 'required|email',
         ]);
-        // if (!Employee::where('emp_id', 'emp_0001')->exists()) {
-        //     Employee::create([
-        //         'emp_id' => 'emp_0001',
-        //         'name' => 'Michael',
-        //         'email' => 'michael@gmail.com',
-        //         'password' => bcrypt('your_password_here'),
-        //         'id' => Str::uuid(),
-        //     ]);
-        // }
 
+        // Check if email (even soft deleted) exists
+        $existingEmployee = Employee::withTrashed()->where('email', $request->email)->first();
+
+        if ($existingEmployee) {
+            if ($existingEmployee->trashed()) {
+                $existingEmployee->restore();
+
+                return redirect()->route('customers.index')->with('success', 'Employee restored successfully.');
+            }
+
+            return redirect()->back()->with('error', 'Email is already in use.');
+        }
+
+        // Generate unique emp_id (e.g., emp_0001)
+        $newNumber = 1;
+        do {
+            $newEmpId = 'emp_' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+            $exists = Employee::withTrashed()->where('emp_id', $newEmpId)->exists();
+            $newNumber++;
+        } while ($exists);
+
+        // Create employee
         Employee::create([
             'id' => (string) Str::uuid(),
             'emp_id' => $newEmpId,
@@ -82,49 +100,23 @@ class CustomersController extends Controller
         return redirect()->route('customers.index')->with('success', 'New customer is added successfully.');
     }
 
+
     public function edit($emp_id)
     {
         $customer = Employee::where('emp_id', $emp_id)->firstOrFail();
         return view('customers.edit', compact('customer'));
     }
-
-
-    // public function update(Request $request, Employee $customer)
-    //     {
-    //         dd($request->all());
-    //         // $customer = Employee::findOrFail($emp_id);
-    //         $customer = Employee::where('emp_id', $emp_id)->first();
-
-
-    //         $request->validate([
-    //             'name'  => 'required|string|max:255',
-    //             'email' => 'required|email|unique:employee_table,email,' . $emp_id . ',emp_id',
-    //         ]);
-    //             dd('Validation passed, continuing update...');
-
-
-
-    //         $customer->update([
-    //             'name'  => $request->name,
-    //             'email' => $request->email,
-    //         ]);
-    //         // dd($request->name);
-
-    //     return redirect()->route('customers.index')->with('success', 'Customer updated successfully.');
-
-    //     }
-
     // public function update(Request $request, $emp_id)
     // {
     //     $employee = Employee::where('emp_id', $emp_id)->firstOrFail();
 
-    //     $request->validate([
+    //     $validated = $request->validate([
     //         'name'  => 'required|string|max:255',
     //         'email' => 'required|email|unique:employee,email,' . $employee->emp_id . ',emp_id',
-    //         'role' => 'required|in:admin,employee',
+    //         'role'  => 'required|in:admin,employee',
     //     ]);
 
-    //     $newRole = $request->role;
+    //     $newRole = $validated['role'];
 
     //     if ($newRole === 'admin') {
     //         $lastAdmin = Employee::where('role', 'admin')
@@ -148,17 +140,32 @@ class CustomersController extends Controller
     //         $newPassword = Hash::make('emp123');
     //     }
 
+    //     // Save updated employee info
     //     $employee->update([
-    //         'name' => $request->name,
-    //         'email' => $request->email,
-    //         'role' => $newRole,
-    //         'emp_id' => $newEmpId,
+    //         'name'     => $validated['name'],
+    //         'email'    => $validated['email'],
+    //         'role'     => $newRole,
+    //         'emp_id'   => $newEmpId,
     //         'password' => $newPassword,
     //     ]);
-    //     $affectempId = Employee::whereDate('emp_id', $validated['emp_id'])->get();
 
-    //     if ($affectempId->count()) {
-    //         Attendance::whereDate('emp_id', $validated['emp_id'])->delete();
+    //     // Delete related attendance if old emp_id exists
+    //     $affectedAttendances = Attendance::where('emp_id', $emp_id)->get();
+    //     $affectedRegisteredOrder = RegisteredOrder::where('emp_id', $emp_id)->get();
+    //     $affectedInvoice = Invoice::where('emp_id', $emp_id)->get();
+    //     $affectedFeedback = Feedback::where('emp_id', $emp_id)->get();
+
+    //     if ($affectedRegisteredOrder->count()) {
+    //         RegisteredOrder::where('emp_id', $emp_id)->delete();
+    //     }
+    //     if ($affectedInvoice->count()) {
+    //         Invoice::where('emp_id', $emp_id)->delete();
+    //     }
+    //     if ($affectedAttendances->count()) {
+    //         Attendance::where('emp_id', $emp_id)->delete();
+    //     }
+    //     if ($affectedFeedback->count()) {
+    //         Feedback::where('emp_id', $emp_id)->delete();
     //     }
 
     //     return redirect()->route('customers.index')->with('success', 'Employee updated successfully.');
@@ -174,7 +181,17 @@ class CustomersController extends Controller
         ]);
 
         $newRole = $validated['role'];
+        $roleChanged = $newRole !== $employee->role;
 
+        // If role has changed, delete associated data before changing emp_id
+        if ($roleChanged) {
+            RegisteredOrder::where('emp_id', $employee->emp_id)->delete();
+            Attendance::where('emp_id', $employee->emp_id)->delete();
+            Invoice::where('emp_id', $employee->emp_id)->delete();
+            Feedback::where('emp_id', $employee->emp_id)->delete();
+        }
+
+        // Generate new emp_id and password based on new role
         if ($newRole === 'admin') {
             $lastAdmin = Employee::where('role', 'admin')
                 ->where('emp_id', 'like', 'admin_%')
@@ -197,7 +214,7 @@ class CustomersController extends Controller
             $newPassword = Hash::make('emp123');
         }
 
-        // Save updated employee info
+        // Update employee with new info
         $employee->update([
             'name'     => $validated['name'],
             'email'    => $validated['email'],
@@ -206,27 +223,9 @@ class CustomersController extends Controller
             'password' => $newPassword,
         ]);
 
-        // Delete related attendance if old emp_id exists
-        $affectedAttendances = Attendance::where('emp_id', $emp_id)->get();
-        $affectedRegisteredOrder = RegisteredOrder::where('emp_id', $emp_id)->get();
-        $affectedInvoice = Invoice::where('emp_id', $emp_id)->get();
-        $affectedFeedback = Feedback::where('emp_id', $emp_id)->get();
-
-        if ($affectedRegisteredOrder->count()) {
-            RegisteredOrder::where('emp_id', $emp_id)->delete();
-        }
-        if ($affectedInvoice->count()) {
-            Invoice::where('emp_id', $emp_id)->delete();
-        }
-        if ($affectedAttendances->count()) {
-            Attendance::where('emp_id', $emp_id)->delete();
-        }
-        if ($affectedFeedback->count()) {
-            Feedback::where('emp_id', $emp_id)->delete();
-        }
-
         return redirect()->route('customers.index')->with('success', 'Employee updated successfully.');
     }
+
 
     public function destroy($emp_id)
     {

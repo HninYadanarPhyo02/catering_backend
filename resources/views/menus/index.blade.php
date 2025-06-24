@@ -31,8 +31,14 @@
 
     {{-- Create New Menu --}}
     <form action="{{ route('menus.store') }}" method="POST" class="card shadow-sm border-0 p-4 mb-4">
-        <h4 class="fw-bold mb-4" style="color: #2A9D8F; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-            <i class="bi bi-plus-circle me-2"></i> Create New Menu
+        <h4 class="fw-bold mb-4 d-flex justify-content-between align-items-center"
+            style="color: #2A9D8F; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+            <span>
+                <i class="bi bi-plus-circle me-2"></i> Create New Menu
+            </span>
+            <span class="badge bg-secondary fs-6">
+                Total Menus: {{ $menuCount }}
+            </span>
         </h4>
 
         @csrf
@@ -63,10 +69,10 @@
             </thead>
             <tbody>
                 @forelse($menus as $index => $menu)
-                
+
                 <tr>
                     <!-- <td class="fw-semibold">{{ $menu->id }}</td> -->
-                     <td class="ps-3 text-muted">{{ $index + 1 }}</td>
+                    <td class="ps-3 text-muted">{{ $index + 1 }}</td>
                     <td>{{ $menu->name }}</td>
                     <td>
                         <div class="d-flex align-items-center gap-2 justify-content-center">
@@ -79,7 +85,7 @@
                                     style="color: #2A9D8F; border: 1px solid #2A9D8F; background-color: transparent;"
                                     onmouseover="this.style.backgroundColor='#2A9D8F'; this.style.color='white';"
                                     onmouseout="this.style.backgroundColor='transparent'; this.style.color='#2A9D8F';">
-                                   <i class="fas fa-edit"></i>  Update
+                                    <i class="fas fa-edit"></i> Update
                                 </button>
                             </form>
 
@@ -107,48 +113,48 @@
         </table>
     </div>
     <!-- pagination links -->
-@if ($menus->hasPages())
+    @if ($menus->hasPages())
     <div class="d-flex justify-content-end mt-4">
         <nav>
             <ul class="pagination pagination-sm mb-0">
                 {{-- Previous Page --}}
                 @if ($menus->onFirstPage())
-                    <li class="page-item disabled">
-                        <span class="page-link rounded-pill border-0 text-muted" style="background-color: #E0E0E0;">&laquo;</span>
-                    </li>
+                <li class="page-item disabled">
+                    <span class="page-link rounded-pill border-0 text-muted" style="background-color: #E0E0E0;">&laquo;</span>
+                </li>
                 @else
-                    <li class="page-item">
-                        <a class="page-link rounded-pill border-0 text-white" href="{{ $menus->previousPageUrl() }}" style="background-color: #2A9D8F;">&laquo;</a>
-                    </li>
+                <li class="page-item">
+                    <a class="page-link rounded-pill border-0 text-white" href="{{ $menus->previousPageUrl() }}" style="background-color: #2A9D8F;">&laquo;</a>
+                </li>
                 @endif
 
                 {{-- Page Numbers --}}
                 @foreach ($menus->links()->elements[0] as $page => $url)
-                    @if ($page == $menus->currentPage())
-                        <li class="page-item active">
-                            <span class="page-link rounded-pill border-0 text-white" style="background-color: #264653;">{{ $page }}</span>
-                        </li>
-                    @else
-                        <li class="page-item">
-                            <a class="page-link rounded-pill border-0 text-dark" href="{{ $url }}" style="background-color: #E9F7F6;">{{ $page }}</a>
-                        </li>
-                    @endif
+                @if ($page == $menus->currentPage())
+                <li class="page-item active">
+                    <span class="page-link rounded-pill border-0 text-white" style="background-color: #264653;">{{ $page }}</span>
+                </li>
+                @else
+                <li class="page-item">
+                    <a class="page-link rounded-pill border-0 text-dark" href="{{ $url }}" style="background-color: #E9F7F6;">{{ $page }}</a>
+                </li>
+                @endif
                 @endforeach
 
                 {{-- Next Page --}}
                 @if ($menus->hasMorePages())
-                    <li class="page-item">
-                        <a class="page-link rounded-pill border-0 text-white" href="{{ $menus->nextPageUrl() }}" style="background-color: #2A9D8F;">&raquo;</a>
-                    </li>
+                <li class="page-item">
+                    <a class="page-link rounded-pill border-0 text-white" href="{{ $menus->nextPageUrl() }}" style="background-color: #2A9D8F;">&raquo;</a>
+                </li>
                 @else
-                    <li class="page-item disabled">
-                        <span class="page-link rounded-pill border-0 text-muted" style="background-color: #E0E0E0;">&raquo;</span>
-                    </li>
+                <li class="page-item disabled">
+                    <span class="page-link rounded-pill border-0 text-muted" style="background-color: #E0E0E0;">&raquo;</span>
+                </li>
                 @endif
             </ul>
         </nav>
     </div>
-@endif
+    @endif
 
 
     @endsection

@@ -4,17 +4,19 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Str;
 
 class FoodMenu extends Model
 {
+    use SoftDeletes;
 
     protected $keyType = 'string';
     public $incrementing = false;
     protected $table = 'foodmenu';
     public $timestamps = true;
-
+    protected $dates = ['deleted_at'];
 
     protected $fillable = [
         'food_id',
