@@ -1,32 +1,39 @@
-@extends('layouts.app') {{-- Make sure you have a layout file or change this as needed --}}
+@extends('layouts.app') {{-- Ensure this layout exists or adjust as needed --}}
 
 @section('content')
 <div class="container mt-5">
+
+    {{-- Alert messages --}}
     @if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
     @endif
 
     @if(session('error'))
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        {{ session('error') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
     @endif
 
-
+    @if(session('info'))
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            {{ session('info') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
 
     {{-- Validation Errors --}}
     @if($errors->any())
-    <div class="alert alert-danger">
-        <ul class="mb-0">
-            @foreach($errors->all() as $error)
-            <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
     @endif
 
     {{-- Create New Menu --}}
@@ -55,8 +62,6 @@
         </div>
     </form>
 
-
-
     {{-- Menu Table --}}
     <div class="table-responsive">
         <table class="table table-bordered table-striped align-middle shadow-sm rounded">
@@ -69,13 +74,12 @@
             </thead>
             <tbody>
                 @forelse($menus as $index => $menu)
-
                 <tr>
-                    <!-- <td class="fw-semibold">{{ $menu->id }}</td> -->
                     <td class="ps-3 text-muted">{{ $index + 1 }}</td>
                     <td>{{ $menu->name }}</td>
                     <td>
                         <div class="d-flex align-items-center gap-2 justify-content-center">
+
                             {{-- Edit Form --}}
                             <form action="{{ route('menus.update', $menu->id) }}" method="POST" class="d-flex align-items-center gap-2 mb-0">
                                 @csrf
@@ -112,7 +116,8 @@
             </tbody>
         </table>
     </div>
-    <!-- pagination links -->
+
+    {{-- Pagination --}}
     @if ($menus->hasPages())
     <div class="d-flex justify-content-end mt-4">
         <nav>
@@ -156,5 +161,5 @@
     </div>
     @endif
 
-
-    @endsection
+</div>
+@endsection

@@ -131,7 +131,7 @@
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm"
-                                        style="color:rgb(182, 48, 14); border: 1px solid rgb(201, 85, 56); background-color: transparent;"
+                                        style="color:rgb(182, 48, 14); border: 1px solid rgb(182, 48, 14); background-color: transparent;"
                                         onmouseover="this.style.backgroundColor='#E76F51'; this.style.color='white';"
                                         onmouseout="this.style.backgroundColor='transparent'; this.style.color='#E76F51';">
                                         <i class="fas fa-trash-alt"></i> Delete

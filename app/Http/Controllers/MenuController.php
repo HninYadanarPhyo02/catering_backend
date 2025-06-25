@@ -88,13 +88,40 @@ class MenuController extends Controller
         return view('menus.index', compact('menus'))->with('editMenu', $menu);
     }
 
+    // public function update(Request $request, FoodMenu $menu)
+    // {
+    //     $request->validate(['name' => 'required|string|max:255']);
+    //     $menu->update($request->only('name'));
+    //     $id = $menu->food_id;
+    //     return redirect()->route('menus.index')->with('success', "$id is updated!");
+    // }
     public function update(Request $request, FoodMenu $menu)
-    {
-        $request->validate(['name' => 'required|string|max:255']);
-        $menu->update($request->only('name'));
-        $id = $menu->food_id;
-        return redirect()->route('menus.index')->with('success', "$id is updated!");
+{
+    $request->validate([
+        'name' => 'required|string|max:255',
+    ]);
+
+    $newName = $request->name;
+
+    // 1. If name is unchanged
+    if ($newName === $menu->name) {
+        return redirect()->back()->with('info', 'No changes detected. The food name is already the same.');
     }
+
+    // 2. Check if name already exists in another record
+    $exists = FoodMenu::where('name', $newName)
+        ->where('id', '!=', $menu->id)
+        ->exists();
+
+    if ($exists) {
+        return redirect()->back()->with('error', 'This food name is already taken.');
+    }
+
+    // 3. Update
+    $menu->update(['name' => $newName]);
+
+    return redirect()->route('menus.index')->with('success', "{$menu->food_id} is updated!");
+}
 
     public function destroy(FoodMenu $menu)
 

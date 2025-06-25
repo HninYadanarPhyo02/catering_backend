@@ -2,21 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Invoice;
 use App\Models\Employee;
+use App\Models\Feedback;
+use App\Models\Attendance;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Imports\CustomerImport;
 use App\Imports\EmployeeImport;
-use App\Models\Attendance;
-use App\Models\Feedback;
-use App\Models\Invoice;
 use App\Models\RegisteredOrder;
 use PhpParser\Node\Expr\Empty_;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Maatwebsite\Excel\Facades\Excel;
 
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Validator;
 
 class CustomersController extends Controller
@@ -117,7 +118,17 @@ class CustomersController extends Controller
     //     ]);
 
     //     $newRole = $validated['role'];
+    //     $roleChanged = $newRole !== $employee->role;
 
+    //     // If role has changed, delete associated data before changing emp_id
+    //     if ($roleChanged) {
+    //         RegisteredOrder::where('emp_id', $employee->emp_id)->delete();
+    //         Attendance::where('emp_id', $employee->emp_id)->delete();
+    //         Invoice::where('emp_id', $employee->emp_id)->delete();
+    //         Feedback::where('emp_id', $employee->emp_id)->delete();
+    //     }
+
+    //     // Generate new emp_id and password based on new role
     //     if ($newRole === 'admin') {
     //         $lastAdmin = Employee::where('role', 'admin')
     //             ->where('emp_id', 'like', 'admin_%')
@@ -140,7 +151,7 @@ class CustomersController extends Controller
     //         $newPassword = Hash::make('emp123');
     //     }
 
-    //     // Save updated employee info
+    //     // Update employee with new info
     //     $employee->update([
     //         'name'     => $validated['name'],
     //         'email'    => $validated['email'],
@@ -149,49 +160,37 @@ class CustomersController extends Controller
     //         'password' => $newPassword,
     //     ]);
 
-    //     // Delete related attendance if old emp_id exists
-    //     $affectedAttendances = Attendance::where('emp_id', $emp_id)->get();
-    //     $affectedRegisteredOrder = RegisteredOrder::where('emp_id', $emp_id)->get();
-    //     $affectedInvoice = Invoice::where('emp_id', $emp_id)->get();
-    //     $affectedFeedback = Feedback::where('emp_id', $emp_id)->get();
-
-    //     if ($affectedRegisteredOrder->count()) {
-    //         RegisteredOrder::where('emp_id', $emp_id)->delete();
-    //     }
-    //     if ($affectedInvoice->count()) {
-    //         Invoice::where('emp_id', $emp_id)->delete();
-    //     }
-    //     if ($affectedAttendances->count()) {
-    //         Attendance::where('emp_id', $emp_id)->delete();
-    //     }
-    //     if ($affectedFeedback->count()) {
-    //         Feedback::where('emp_id', $emp_id)->delete();
-    //     }
-
     //     return redirect()->route('customers.index')->with('success', 'Employee updated successfully.');
     // }
+
     public function update(Request $request, $emp_id)
-    {
-        $employee = Employee::where('emp_id', $emp_id)->firstOrFail();
+{
+    $employee = Employee::where('emp_id', $emp_id)->firstOrFail();
 
-        $validated = $request->validate([
-            'name'  => 'required|string|max:255',
-            'email' => 'required|email|unique:employee,email,' . $employee->emp_id . ',emp_id',
-            'role'  => 'required|in:admin,employee',
-        ]);
+    $validated = $request->validate([
+        'name'  => 'required|string|max:255',
+        'email' => 'required|email|unique:employee,email,' . $employee->id,
+        'role'  => 'required|in:admin,employee',
+    ]);
 
-        $newRole = $validated['role'];
-        $roleChanged = $newRole !== $employee->role;
+    $newRole = $validated['role'];
+    $roleChanged = $newRole !== $employee->role;
 
-        // If role has changed, delete associated data before changing emp_id
-        if ($roleChanged) {
-            RegisteredOrder::where('emp_id', $employee->emp_id)->delete();
-            Attendance::where('emp_id', $employee->emp_id)->delete();
-            Invoice::where('emp_id', $employee->emp_id)->delete();
-            Feedback::where('emp_id', $employee->emp_id)->delete();
+    $updateData = [
+        'name'  => $validated['name'],
+        'email' => $validated['email'],
+        'role'  => $newRole,
+    ];
+
+    if ($roleChanged) {
+        // Delete related records if changing from employee to admin
+        if ($employee->role === 'employee' && $newRole === 'admin') {
+            DB::table('attendance')->where('emp_id', $employee->emp_id)->delete();
+            DB::table('registered_order')->where('emp_id', $employee->emp_id)->delete();
+            DB::table('feedback')->where('emp_id', $employee->emp_id)->delete();
         }
 
-        // Generate new emp_id and password based on new role
+        // Generate new emp_id based on new role
         if ($newRole === 'admin') {
             $lastAdmin = Employee::where('role', 'admin')
                 ->where('emp_id', 'like', 'admin_%')
@@ -201,7 +200,7 @@ class CustomersController extends Controller
             $lastNumber = $lastAdmin ? intval(substr($lastAdmin->emp_id, 6)) : 0;
             $newNumber = $lastNumber + 1;
             $newEmpId = 'admin_' . str_pad($newNumber, 2, '0', STR_PAD_LEFT);
-            $newPassword = Hash::make('admin123');
+            $employee->password = Hash::make('admin123');
         } else {
             $lastEmp = Employee::where('role', 'employee')
                 ->where('emp_id', 'like', 'emp_%')
@@ -211,21 +210,18 @@ class CustomersController extends Controller
             $lastNumber = $lastEmp ? intval(substr($lastEmp->emp_id, 4)) : 0;
             $newNumber = $lastNumber + 1;
             $newEmpId = 'emp_' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
-            $newPassword = Hash::make('emp123');
+            $employee->password = Hash::make('emp123');
         }
 
-        // Update employee with new info
-        $employee->update([
-            'name'     => $validated['name'],
-            'email'    => $validated['email'],
-            'role'     => $newRole,
-            'emp_id'   => $newEmpId,
-            'password' => $newPassword,
-        ]);
-
-        return redirect()->route('customers.index')->with('success', 'Employee updated successfully.');
+        $updateData['emp_id'] = $newEmpId;
     }
 
+    $employee->update($updateData);
+
+    return redirect()->route('customers.index')->with('success', 'Employee updated successfully.');
+}
+
+    
 
     public function destroy($emp_id)
     {
