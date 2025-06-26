@@ -59,7 +59,7 @@
                        onmouseover="this.style.backgroundColor='#2A9D8F'; this.style.color='white';"
                        onmouseout="this.style.backgroundColor='transparent'; this.style.color='#2A9D8F';"
                        title="Edit Holiday" aria-label="Edit holiday {{ $holiday->name }}">
-                        <i class="fas fa-edit"></i> Edit
+                        <i class="fas fa-edit"></i> 
                     </a>
 
                     <form action="{{ route('holidays.destroy', $holiday->h_id) }}" method="POST" 
@@ -71,7 +71,7 @@
                                 onmouseover="this.style.backgroundColor='#E76F51'; this.style.color='white';"
                                 onmouseout="this.style.backgroundColor='transparent'; this.style.color='#E76F51';"
                                 title="Delete Holiday" aria-label="Delete holiday {{ $holiday->name }}">
-                            <i class="fas fa-trash-alt"></i> Delete
+                            <i class="fas fa-trash-alt"></i> 
                         </button>
                     </form>
                 </div>

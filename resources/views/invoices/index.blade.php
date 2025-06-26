@@ -134,7 +134,7 @@
     {{ $invoices->withQueryString()->links() }}
   </div>
   @else
-  <p class="text-muted">No invoice records available.</p>
+  <p class="text-muted"></p>
   @endif
 
 </div>

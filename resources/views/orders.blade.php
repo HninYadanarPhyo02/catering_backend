@@ -61,7 +61,7 @@
                 <!-- Submit Button -->
                 <div class="text-end mt-3">
                     <button type="submit" class="btn" style="background-color: #2A9D8F; color: white;">
-                        <<i class="fas fa-cart-plus me-1"></i> Submit Order
+                        <i class="fas fa-cart-plus me-1"></i> Submit Order
 
                     </button>
                 </div>

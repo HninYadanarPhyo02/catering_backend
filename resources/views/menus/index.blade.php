@@ -5,35 +5,35 @@
 
     {{-- Alert messages --}}
     @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
     @endif
 
     @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
     @endif
 
     @if(session('info'))
-        <div class="alert alert-info alert-dismissible fade show" role="alert">
-            {{ session('info') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        {{ session('info') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
     @endif
 
     {{-- Validation Errors --}}
     @if($errors->any())
-        <div class="alert alert-danger">
-            <ul class="mb-0">
-                @foreach($errors->all() as $error)
-                <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
+    <div class="alert alert-danger">
+        <ul class="mb-0">
+            @foreach($errors->all() as $error)
+            <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
     @endif
 
     {{-- Create New Menu --}}
@@ -62,23 +62,31 @@
         </div>
     </form>
 
-    {{-- Menu Table --}}
     <div class="table-responsive">
-        <table class="table table-bordered table-striped align-middle shadow-sm rounded">
+        <table class="table table-bordered table-striped align-middle shadow-sm rounded"
+            style="table-layout: fixed; width: 100%;">
+
+            <colgroup>
+                <col style="width: 10%;">
+                <col style="width: 50%;">
+                <col style="width: 300px;">
+            </colgroup>
+
             <thead class="table-light border-bottom">
                 <tr class="text-secondary">
-                    <th scope="col"> # </th>
-                    <th scope="col">Menu Name</th>
-                    <th scope="col" class="text-center" style="width: 220px;">Actions</th>
+                    <th scope="col" class="text-center"> # </th>
+                    <th scope="col" class="text-center">Menu Name</th>
+                    <th scope="col" class="text-center">Actions</th>
                 </tr>
             </thead>
+
             <tbody>
                 @forelse($menus as $index => $menu)
                 <tr>
-                    <td class="ps-3 text-muted">{{ $index + 1 }}</td>
-                    <td>{{ $menu->name }}</td>
+                    <td class="ps-3 text-muted text-center">{{ $index + 1 }}</td>
+                    <td class="text-center">{{ $menu->name }}</td>
                     <td>
-                        <div class="d-flex align-items-center gap-2 justify-content-center">
+                        <div class="d-flex align-items-center justify-content-center gap-2 flex-nowrap">
 
                             {{-- Edit Form --}}
                             <form action="{{ route('menus.update', $menu->id) }}" method="POST" class="d-flex align-items-center gap-2 mb-0">
@@ -89,7 +97,7 @@
                                     style="color: #2A9D8F; border: 1px solid #2A9D8F; background-color: transparent;"
                                     onmouseover="this.style.backgroundColor='#2A9D8F'; this.style.color='white';"
                                     onmouseout="this.style.backgroundColor='transparent'; this.style.color='#2A9D8F';">
-                                    <i class="fas fa-edit"></i> Update
+                                    <i class="fas fa-edit"></i>
                                 </button>
                             </form>
 
@@ -102,7 +110,7 @@
                                     style="color: #E76F51; border: 1px solid #E76F51; background-color: transparent;"
                                     onmouseover="this.style.backgroundColor='#E76F51'; this.style.color='white';"
                                     onmouseout="this.style.backgroundColor='transparent'; this.style.color='#E76F51';">
-                                    <i class="fas fa-trash-alt"></i> Delete
+                                    <i class="fas fa-trash-alt"></i>
                                 </button>
                             </form>
                         </div>
@@ -116,6 +124,7 @@
             </tbody>
         </table>
     </div>
+
 
     {{-- Pagination --}}
     @if ($menus->hasPages())
