@@ -218,11 +218,11 @@ class FoodMonthPriceController extends Controller
     $dateOnly = Carbon::parse($food->date)->toDateString();
 
     // Debug: Make sure records exist
-    $orders = RegisteredOrder::whereDate('date', $dateOnly)->get();
+    // $orders = RegisteredOrder::whereDate('date', $dateOnly)->get();
 
-    if ($orders->isEmpty()) {
-        return response()->json(['message' => 'No matching Registered Orders found'], 404);
-    }
+    // if ($orders->isEmpty()) {
+    //     return response()->json(['message' => 'No matching Registered Orders found'], 404);
+    // }
 
     // Delete or force delete
     RegisteredOrder::whereDate('date', $dateOnly)->delete(); // or ->forceDelete() if needed

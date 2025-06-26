@@ -23,25 +23,7 @@ class FoodMenu extends Model
         'name'
     ];
 
-    // public static function boot()
-    // {
-    //     parent::boot();
-
-    //     static::creating(function ($model) {
-    //         if (empty($model->{$model->getKeyName()})) {
-    //             $model->{$model->getKeyName()} = (string) Str::uuid();
-    //         }
-    //     });
-    // }
-
-    //  protected static function booted()
-    // {
-    //     static::creating(function ($model) {
-    //         if (empty($model->food_id)) {
-    //             $model->food_id = 'food_' . Str::random(6); // or use uuid: Str::uuid()
-    //         }
-    //     });
-    // }
+    
     public static function findByName($name)
     {
         return self::whereRaw('LOWER(name) = ?', [strtolower($name)]);

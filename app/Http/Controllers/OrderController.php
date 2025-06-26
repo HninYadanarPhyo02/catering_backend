@@ -218,10 +218,10 @@ class OrderController extends Controller
 
     $dateOnly = Carbon::parse($food->date)->toDateString();
 
-    $rawOrders = DB::table('registered_order')->whereDate('date', $dateOnly)->get();
-    if ($rawOrders->isEmpty()) {
-        return response()->json(['message' => 'No matching Registered Orders found'], 404);
-    }
+    // $rawOrders = DB::table('registered_order')->whereDate('date', $dateOnly)->get();
+    // if ($rawOrders->isEmpty()) {
+    //     return response()->json(['message' => 'No matching Registered Orders found'], 404);
+    // }
 
     // Delete related records
     RegisteredOrder::whereDate('date', $dateOnly)->delete();
