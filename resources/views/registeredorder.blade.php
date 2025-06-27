@@ -45,6 +45,9 @@
   </div>
   @else
   <div class="card shadow-sm border-0 rounded-4">
+    <div class="card-header bg-white border-bottom fw-semibold text-secondary">
+            <i class="bi bi-people-fill me-2 text-primary"></i> Order Summary
+        </div>
     <div class="table-responsive">
       <table class="table table-bordered table-hover align-middle mb-0">
         <thead class="text-center text-uppercase" style="background-color: #E9F7F6; color: #264653;">
@@ -81,6 +84,7 @@
   <!-- Pagination -->
   @if ($orderSummary->hasPages())
   <div class="d-flex justify-content-end mt-4">
+
     <nav>
       <ul class="pagination pagination-sm mb-0">
         {{-- Previous Page Link --}}
