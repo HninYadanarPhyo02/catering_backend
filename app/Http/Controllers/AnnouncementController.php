@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use App\Models\Invoice;
 use App\Models\Attendance;
 use App\Models\Announcement;
@@ -32,9 +33,13 @@ class AnnouncementController extends Controller
         // You can add date or message filters too if you want here
         // $announcements = $query->orderBy('created_at', 'desc')->paginate(6);
         $announcements = $query->orderBy('created_at', 'desc')->paginate(5);
+        $now = Carbon::now();
+        $monthlyAnnouncementCount = Announcement::whereMonth('date', $now->month)
+            ->whereYear('date', $now->year)
+            ->count();
 
 
-        return view('announcement', compact('announcements'));
+        return view('announcement', compact('announcements','monthlyAnnouncementCount'));
     }
 
     public function show($id)

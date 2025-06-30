@@ -22,7 +22,7 @@
         }
 
         .login-container {
-            background-color: #37474F;
+            background-color: #1f2937;
             padding: 12px 50px 30px 50px;
             border-radius: 10px;
             box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);

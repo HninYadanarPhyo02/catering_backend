@@ -20,7 +20,7 @@
 </style>
 
 <div class="container my-5">
-    <h2 class="mb-4" style="color: #F4A261;">Reports & Analysis</h2>
+    <h3 class="mb-4" style="color: rgba(235, 110, 8, 0.7);">Reports & Analysis</h3>
 
     <section id="analytics">
         <div class="row g-3">
@@ -91,7 +91,7 @@
             datasets: [{
                 label: 'Sales',
                 data: salesData,
-                backgroundColor: 'rgba(27, 146, 132, 0.7)'
+                backgroundColor: 'rgba(12, 153, 137, 0.7)'
             }]
         },
         options: commonOptions
@@ -104,7 +104,7 @@
             datasets: [{
                 label: 'Active Users',
                 data: engagementData,
-                borderColor: 'rgba(233, 113, 16, 0.7)',
+                borderColor: 'rgba(235, 110, 8, 0.7)',
                 fill: false,
                 tension: 0.3
             }]
@@ -119,7 +119,7 @@
             datasets: [{
                 label: 'Items Sold',
                 data: topSellingData,
-                backgroundColor: 'rgba(233, 113, 16, 0.7)',
+                backgroundColor: 'rgba(235, 110, 8, 0.7)',
                 borderRadius: 4
             }]
         },
@@ -172,12 +172,12 @@
             datasets: [{
                     label: 'Registered Orders',
                     data: monthlyRegisteredData,
-                    backgroundColor: 'rgba(27, 146, 132, 0.7)'
+                    backgroundColor: 'rgba(12, 153, 137, 0.7)'
                 },
                 {
                     label: 'Attendance (Checked Out)',
                     data: monthlyAttendanceData.map(val => val ?? 0), // fallback to 0 if null/undefined
-                    backgroundColor: 'rgba(233, 113, 16, 0.7)'
+                    backgroundColor: 'rgba(235, 110, 8, 0.7)'
                 }
             ]
         },

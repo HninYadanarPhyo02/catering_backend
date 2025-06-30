@@ -118,23 +118,23 @@
                             <td>
                                 <a href="{{ route('orders.edit', $order->id) }}"
                                     class="btn btn-sm"
-                                    style="color:rgb(230, 165, 3); border: 1px solid rgb(233, 186, 68); background-color: transparent;"
-                                    onmouseover="this.style.backgroundColor='#E9C46A'; this.style.color='white';"
-                                    onmouseout="this.style.backgroundColor='transparent'; this.style.color='#E9C46A';">
-                                    <i class="fas fa-edit"></i> Edit
+                                    style="color:rgb(230, 165, 3); border: 1px solid rgb(230, 165, 3); background-color: transparent;"
+                                    onmouseover="this.style.backgroundColor='rgb(230, 165, 3)'; this.style.color='white';"
+                                    onmouseout="this.style.backgroundColor='transparent'; this.style.color='rgb(230, 165, 3)';">
+                                    <i class="fas fa-edit"></i> 
                                 </a>
 
                                 <form action="{{ route('orders.destroyByDate', ['date' => \Carbon\Carbon::parse($order->date)->format('Y-m-d')]) }}"
                                     method="POST"
                                     class="d-inline"
-                                    onsubmit="return confirm('Are you sure you want to delete all orders for this date?');">
+                                    onsubmit="return confirm('Are you sure you want to delete all orders on {{$order->date}} ?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm"
                                         style="color:rgb(182, 48, 14); border: 1px solid rgb(182, 48, 14); background-color: transparent;"
-                                        onmouseover="this.style.backgroundColor='#E76F51'; this.style.color='white';"
-                                        onmouseout="this.style.backgroundColor='transparent'; this.style.color='#E76F51';">
-                                        <i class="fas fa-trash-alt"></i> Delete
+                                        onmouseover="this.style.backgroundColor='rgb(182, 48, 14)'; this.style.color='white';"
+                                        onmouseout="this.style.backgroundColor='transparent'; this.style.color='rgb(182, 48, 14)';">
+                                        <i class="fas fa-trash-alt"></i> 
                                     </button>
                                 </form>
 

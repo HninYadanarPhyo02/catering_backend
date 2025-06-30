@@ -20,7 +20,7 @@
             height: 100vh;
             position: fixed;
             width: 220px;
-            background-color: #37474F;
+            background-color: #1f2937;
             color: #ffffff;
             overflow-y: auto;
             /* Enable vertical scrolling */

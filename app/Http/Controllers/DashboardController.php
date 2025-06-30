@@ -100,7 +100,7 @@ class DashboardController extends Controller
             ->where('year', $Year)
             ->orderByDesc('year')
             ->orderByDesc('month')
-            ->get();
+            ->limit(5)->get();
         return view('dashboard', compact(
             'totalmenus',
             'monthlymenus',
