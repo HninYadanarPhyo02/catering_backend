@@ -3,7 +3,7 @@
 @section('title', 'Registered Orders')
 
 @section('content')
-<div class="container py-5">
+<div class="container-fluid px-3 mt-4">
   <!-- Filter Form -->
   <form method="GET" action="{{ route('registeredorder') }}" class="mb-5 p-4 border-0 rounded-4 shadow-sm bg-white">
     <h4 class="fw-bold mb-4 pb-2 border-bottom" style="color: #2A9D8F; border-color: #2A9D8F; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
@@ -13,9 +13,9 @@
     <div class="row g-3 align-items-end">
       <!-- Employee Select Dropdown -->
       <div class="col-md-6 col-lg-4">
-        <label for="emp_id" class="form-label fw-semibold text-muted">Select Employee</label>
+        <label for="emp_id" class="form-label fw-semibold text-muted">Select User</label>
         <select name="emp_id" id="emp_id" class="form-select shadow-sm rounded">
-          <option value="" disabled selected>All Employees</option>
+          <option value="" disabled selected>All Users</option>
           @foreach($employees as $employee)
           @if(strtolower($employee->role) !== 'admin')
           <option value="{{ $employee->emp_id }}" {{ request('emp_id') == $employee->emp_id ? 'selected' : '' }}>

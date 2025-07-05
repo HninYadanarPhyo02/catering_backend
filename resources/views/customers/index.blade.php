@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mt-5">
+<div class="container-fluid px-3 mt-4">
     @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
     @endif
@@ -9,7 +9,7 @@
     <!-- Business-Styled Employee Creation Form -->
     <div class="card shadow-sm border-0 mb-5">
         <div class="card-header" style="background-color: #264653; color: white;">
-            <h5 class="mb-0">Employee Management</h5>
+            <h5 class="mb-0">Users Management</h5>
         </div>
         <div class="card-body">
             <form action="{{ route('customers.store') }}" method="POST" novalidate>
@@ -17,7 +17,7 @@
                 <div class="row g-4 align-items-center">
                     <!-- Employee Name -->
                     <div class="col-md-5">
-                        <label for="name" class="form-label fw-semibold">Employee Name</label>
+                        <label for="name" class="form-label fw-semibold">User Name</label>
                         <input type="text" name="name" id="name" class="form-control" placeholder="e.g. Jane Doe" required>
                     </div>
 
@@ -46,11 +46,20 @@
             <form method="GET" action="{{ route('customers.index') }}"
                 class="mb-5 p-4 border-0 rounded-4 shadow-sm bg-white">
 
-                <h5 class="fw-bold mb-4 pb-2 border-bottom"
-                    style="color: #2A9D8F; border-color: #2A9D8F; 
-               font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-                    <i class="fas fa-filter me-2"></i> Filter by Role
+                <h5 class="fw-bold mb-4 pb-2 border-bottom d-flex justify-content-between align-items-center"
+                    style="color: #2A9D8F; border-color: #2A9D8F; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+
+                    <span>
+                        <i class="fas fa-filter me-2"></i> Filter by Role
+                    </span>
+
+                    <span>
+                        <span class="badge" style="font-size: 0.95rem;  color: #2A9D8F;">Users : {{ $employeeCount }}</span>
+                        <span class="badge" style="font-size: 0.95rem;  color:#264653;">Admins : {{ $adminCount }}</span>
+                    </span>
                 </h5>
+
+
 
                 <div class="row g-3 align-items-end">
                     <!-- Role Dropdown -->
@@ -104,21 +113,21 @@
                         <td>
                             <a href="{{ route('customers.edit', $customer->emp_id) }}"
                                 class="btn btn-sm"
-                                style="color:rgb(230, 165, 3); border: 1px solid rgb(233, 186, 68); background-color: transparent;"
-                                onmouseover="this.style.backgroundColor='#E9C46A'; this.style.color='white';"
-                                onmouseout="this.style.backgroundColor='transparent'; this.style.color='#E9C46A';">
-                                <i class="fas fa-edit"></i> Edit
+                                style="color: rgb(230, 165, 3); border: 1px solid rgb(230, 165, 3); background-color: transparent;"
+                                onmouseover="this.style.backgroundColor='rgb(230, 165, 3)'; this.style.color='white';"
+                                onmouseout="this.style.backgroundColor='transparent'; this.style.color='rgb(230, 165, 3)';">
+                                <i class="fas fa-edit"></i>
                             </a>
 
                             <form action="{{ route('customers.destroy', $customer->emp_id) }}" method="POST" class="d-inline"
-                                onsubmit="return confirm('Are you sure to delete user: {{ $customer->name }}?')">
+                                onsubmit="return confirm('Are you sure to delete {{$customer->role}}: {{ $customer->name }}?')">
                                 @csrf
                                 @method('DELETE')
                                 <button class="btn btn-sm"
-                                    style="color:rgb(182, 48, 14); border: 1px solid rgb(201, 85, 56); background-color: transparent;"
-                                    onmouseover="this.style.backgroundColor='#E76F51'; this.style.color='white';"
-                                    onmouseout="this.style.backgroundColor='transparent'; this.style.color='#E76F51';">
-                                    <i class="fas fa-trash-alt"></i> Delete
+                                    style="color: rgb(182, 48, 14); border: 1px solid rgb(182, 48, 14); background-color: transparent;"
+                                    onmouseover="this.style.backgroundColor='#rgb(182, 48, 14)'; this.style.color='white';"
+                                    onmouseout="this.style.backgroundColor='transparent'; this.style.color='#rgb(182, 48, 14)';">
+                                    <i class="fas fa-trash-alt"></i>
                                 </button>
                             </form>
                         </td>
@@ -179,3 +188,14 @@
     @endif
 </div>
 @endsection
+<style>
+    .badge-employee {
+        background-color: #2A9D8F;
+        color: white;
+    }
+
+    .badge-admin {
+        background-color: #264653;
+        color: white;
+    }
+</style>

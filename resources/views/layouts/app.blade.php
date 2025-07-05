@@ -19,8 +19,8 @@
         .sidebar {
             height: 100vh;
             position: fixed;
-            width: 220px;
-            background-color: #37474F;
+            width: 240px;
+            background-color: #1f2937;
             color: #ffffff;
             overflow-y: auto;
             /* Enable vertical scrolling */
@@ -116,7 +116,8 @@
             <div class="dropdown">
     <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle" id="adminDropdown" data-bs-toggle="dropdown" aria-expanded="false">
         <i class="fas fa-user-circle fa-2x me-2"></i>
-        <span>Admin</span>
+       <span>{{ Auth::user()->name }}</span>
+
     </a>
 
     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminDropdown">

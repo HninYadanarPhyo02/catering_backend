@@ -3,7 +3,7 @@
 @section('title', 'Employee Invoices')
 
 @section('content')
-<div class="container mt-4">
+<div class="container-fluid px-3 mt-4">
 
   {{-- Filter Form --}}
   <form method="GET" action="{{ route('invoices.index') }}" class="mb-5 p-4 border-0 rounded-4 shadow-sm bg-white">
@@ -84,9 +84,13 @@
   <div class="d-flex justify-content-end mb-3">
     <form action="{{ route('invoices.send-all') }}" method="POST" onsubmit="return confirm('Are you sure you want to send invoices to all employees who ordered this month?')">
       @csrf
-      <button type="submit" class="btn btn-success d-flex align-items-center gap-2 shadow-sm">
-        <i class="fas fa-paper-plane"></i> Send All Invoices
+      <button type="submit" class="btn btn-sm"
+        style="color: #2A9D8F; border: 1px solid #2A9D8F; background-color: transparent;"
+        onmouseover="this.style.backgroundColor='#2A9D8F'; this.style.color='white';"
+        onmouseout="this.style.backgroundColor='transparent'; this.style.color='#2A9D8F';">
+        <i class="fas fa-paper-plane me-1"></i> Send All Invoices
       </button>
+
 
     </form>
   </div>

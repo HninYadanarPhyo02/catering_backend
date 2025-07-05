@@ -1,7 +1,7 @@
 @extends('layouts.app') {{-- Ensure this layout exists or adjust as needed --}}
 
 @section('content')
-<div class="container mt-5">
+<div class="container-fluid px-3 mt-4">
 
     {{-- Alert messages --}}
     @if(session('success'))
@@ -43,10 +43,11 @@
             <span>
                 <i class="bi bi-plus-circle me-2"></i> Create New Menu
             </span>
-            <span class="badge bg-secondary fs-6">
-                Total Menus: {{ $menuCount }}
+            <span class="badge" style="background-color:; color: #2A9D8F; font-size: 0.95rem;">
+                Total Menus : {{ $menuCount }}
             </span>
         </h4>
+
 
         @csrf
         <div class="row g-3 align-items-end">
@@ -94,9 +95,9 @@
                                 @method('PUT')
                                 <input type="text" name="name" class="form-control form-control-sm w-auto" value="{{ $menu->name }}" required>
                                 <button type="submit" class="btn btn-sm"
-                                    style="color: #2A9D8F; border: 1px solid #2A9D8F; background-color: transparent;"
-                                    onmouseover="this.style.backgroundColor='#2A9D8F'; this.style.color='white';"
-                                    onmouseout="this.style.backgroundColor='transparent'; this.style.color='#2A9D8F';">
+                                    style="color: rgb(230, 165, 3); border: 1px solid rgb(230, 165, 3); background-color: transparent;"
+                                onmouseover="this.style.backgroundColor='rgb(230, 165, 3)'; this.style.color='white';"
+                                onmouseout="this.style.backgroundColor='transparent'; this.style.color='rgb(230, 165, 3)';">
                                     <i class="fas fa-edit"></i>
                                 </button>
                             </form>
@@ -107,9 +108,9 @@
                                 @csrf
                                 @method('DELETE')
                                 <button class="btn btn-sm"
-                                    style="color: #E76F51; border: 1px solid #E76F51; background-color: transparent;"
-                                    onmouseover="this.style.backgroundColor='#E76F51'; this.style.color='white';"
-                                    onmouseout="this.style.backgroundColor='transparent'; this.style.color='#E76F51';">
+                                    style="color: rgb(182, 48, 14); border: 1px solid rgb(182, 48, 14); background-color: transparent;"
+                                    onmouseover="this.style.backgroundColor='rgb(182, 48, 14)'; this.style.color='white';"
+                                    onmouseout="this.style.backgroundColor='transparent'; this.style.color='rgb(182, 48, 14)';">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
                             </form>

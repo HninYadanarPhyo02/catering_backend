@@ -30,10 +30,12 @@ class CustomersController extends Controller
         if ($request->filled('role')) {
             $query->where('role', $request->role);
         }
+        $employeeCount = Employee::where('role', 'employee')->count();
+        $adminCount = Employee::where('role', 'admin')->count();
 
         $customers = $query->orderBy('created_at', 'desc')->paginate(5);
 
-        return view('customers.index', compact('customers'));
+        return view('customers.index', compact('customers','employeeCount','adminCount'));
     }
 
     //     public function store(Request $request)
@@ -164,64 +166,64 @@ class CustomersController extends Controller
     // }
 
     public function update(Request $request, $emp_id)
-{
-    $employee = Employee::where('emp_id', $emp_id)->firstOrFail();
+    {
+        $employee = Employee::where('emp_id', $emp_id)->firstOrFail();
 
-    $validated = $request->validate([
-        'name'  => 'required|string|max:255',
-        'email' => 'required|email|unique:employee,email,' . $employee->id,
-        'role'  => 'required|in:admin,employee',
-    ]);
+        $validated = $request->validate([
+            'name'  => 'required|string|max:255',
+            'email' => 'required|email|unique:employee,email,' . $employee->id,
+            'role'  => 'required|in:admin,employee',
+        ]);
 
-    $newRole = $validated['role'];
-    $roleChanged = $newRole !== $employee->role;
+        $newRole = $validated['role'];
+        $roleChanged = $newRole !== $employee->role;
 
-    $updateData = [
-        'name'  => $validated['name'],
-        'email' => $validated['email'],
-        'role'  => $newRole,
-    ];
+        $updateData = [
+            'name'  => $validated['name'],
+            'email' => $validated['email'],
+            'role'  => $newRole,
+        ];
 
-    if ($roleChanged) {
-        // Delete related records if changing from employee to admin
-        if ($employee->role === 'employee' && $newRole === 'admin') {
-            DB::table('attendance')->where('emp_id', $employee->emp_id)->delete();
-            DB::table('registered_order')->where('emp_id', $employee->emp_id)->delete();
-            DB::table('feedback')->where('emp_id', $employee->emp_id)->delete();
+        if ($roleChanged) {
+            // Delete related records if changing from employee to admin
+            if ($employee->role === 'employee' && $newRole === 'admin') {
+                DB::table('attendance')->where('emp_id', $employee->emp_id)->delete();
+                DB::table('registered_order')->where('emp_id', $employee->emp_id)->delete();
+                DB::table('feedback')->where('emp_id', $employee->emp_id)->delete();
+            }
+
+            // Generate new emp_id based on new role
+            if ($newRole === 'admin') {
+                $lastAdmin = Employee::where('role', 'admin')
+                    ->where('emp_id', 'like', 'admin_%')
+                    ->orderByRaw("CAST(SUBSTRING(emp_id, 7) AS UNSIGNED) DESC")
+                    ->first();
+
+                $lastNumber = $lastAdmin ? intval(substr($lastAdmin->emp_id, 6)) : 0;
+                $newNumber = $lastNumber + 1;
+                $newEmpId = 'admin_' . str_pad($newNumber, 2, '0', STR_PAD_LEFT);
+                $employee->password = Hash::make('admin123');
+            } else {
+                $lastEmp = Employee::where('role', 'employee')
+                    ->where('emp_id', 'like', 'emp_%')
+                    ->orderByRaw("CAST(SUBSTRING(emp_id, 5) AS UNSIGNED) DESC")
+                    ->first();
+
+                $lastNumber = $lastEmp ? intval(substr($lastEmp->emp_id, 4)) : 0;
+                $newNumber = $lastNumber + 1;
+                $newEmpId = 'emp_' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+                $employee->password = Hash::make('emp123');
+            }
+
+            $updateData['emp_id'] = $newEmpId;
         }
 
-        // Generate new emp_id based on new role
-        if ($newRole === 'admin') {
-            $lastAdmin = Employee::where('role', 'admin')
-                ->where('emp_id', 'like', 'admin_%')
-                ->orderByRaw("CAST(SUBSTRING(emp_id, 7) AS UNSIGNED) DESC")
-                ->first();
+        $employee->update($updateData);
 
-            $lastNumber = $lastAdmin ? intval(substr($lastAdmin->emp_id, 6)) : 0;
-            $newNumber = $lastNumber + 1;
-            $newEmpId = 'admin_' . str_pad($newNumber, 2, '0', STR_PAD_LEFT);
-            $employee->password = Hash::make('admin123');
-        } else {
-            $lastEmp = Employee::where('role', 'employee')
-                ->where('emp_id', 'like', 'emp_%')
-                ->orderByRaw("CAST(SUBSTRING(emp_id, 5) AS UNSIGNED) DESC")
-                ->first();
-
-            $lastNumber = $lastEmp ? intval(substr($lastEmp->emp_id, 4)) : 0;
-            $newNumber = $lastNumber + 1;
-            $newEmpId = 'emp_' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
-            $employee->password = Hash::make('emp123');
-        }
-
-        $updateData['emp_id'] = $newEmpId;
+        return redirect()->route('customers.index')->with('success', 'Employee updated successfully.');
     }
 
-    $employee->update($updateData);
 
-    return redirect()->route('customers.index')->with('success', 'Employee updated successfully.');
-}
-
-    
 
     public function destroy($emp_id)
     {

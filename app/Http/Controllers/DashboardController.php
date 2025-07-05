@@ -23,8 +23,7 @@ class DashboardController extends Controller
             ->whereYear('date', Carbon::now()->year)
             ->distinct('food_id')
             ->count('food_id');
-
-
+            
         $monthlyavailable = FoodMonthPrice::whereMonth('date', Carbon::now()->month)
             ->whereYear('date', Carbon::now()->year)
             ->count();
@@ -100,7 +99,7 @@ class DashboardController extends Controller
             ->where('year', $Year)
             ->orderByDesc('year')
             ->orderByDesc('month')
-            ->get();
+            ->limit(5)->get();
         return view('dashboard', compact(
             'totalmenus',
             'monthlymenus',

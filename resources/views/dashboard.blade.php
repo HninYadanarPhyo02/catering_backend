@@ -3,23 +3,21 @@
 @section('title', 'Dashboard')
 
 @section('content')
-<div class="container mt-4">
+<div class="container-fluid px-3 mt-4">
+
 
     {{-- Business-style Dashboard Cards --}}
     <div class="mb-4">
-        <!-- <h4 class="fw-bold" style="color: #F4A261; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-        Dashboard
-    </h4> -->
     </div>
-
+    <div class="container mb-4">
     <div class="d-flex flex-wrap gap-3 mb-4">
         @php
         $cards = [
-        ['title' => 'Monthly Menus', 'value' => $monthlymenus, 'icon' => 'utensils', 'color' => '#2A9D8F'],
-        ['title' => 'Monthly Available Days', 'value' => $monthlyavailable, 'icon' => 'calendar-alt', 'color' => '#E9C46A'],
-        ['title' => 'Total Employees', 'value' => $totalemployees, 'icon' => 'users', 'color' => '#F4A261'],
-        ['title' => 'Monthly Orders', 'value' => $monthlyorders, 'icon' => 'receipt', 'color' => '#E76F51'],
-        ['title' => 'Monthly Checkout', 'value' => $totalCheckout, 'icon' => 'check-circle', 'color' => '#2A9D8F'],
+        ['title' => 'Monthly Menus', 'value' => $monthlymenus, 'icon' => 'utensils', 'color' => 'rgb(0, 133, 117)'],
+        ['title' => 'Monthly Available Days', 'value' => $monthlyavailable, 'icon' => 'calendar-alt', 'color' => 'rgb(230, 165, 3)'],
+        ['title' => 'Total Users', 'value' => $totalemployees, 'icon' => 'users', 'color' => 'rgba(235, 110, 8, 0.7)'],
+        ['title' => 'Monthly Orders', 'value' => $monthlyorders, 'icon' => 'receipt', 'color' => 'rgb(182, 48, 14)'],
+        ['title' => 'Monthly Checkout', 'value' => $totalCheckout, 'icon' => 'check-circle', 'color' => 'rgb(0, 133, 117)'],
         ];
         @endphp
 
@@ -37,53 +35,9 @@
         </div>
         @endforeach
     </div>
-    <!-- {{-- Recent Orders (Business Style) --}}
-<div class="card border-light shadow-sm mb-4">
-    <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
-        <h5 class="mb-0 text-dark">Recent Orders</h5>
-        <i class="fas fa-clock text-muted"></i>
     </div>
-    <div class="card-body">
-        @if($recentOrders->isEmpty())
-            <div class="text-center text-muted py-4">
-                <i class="fas fa-inbox fa-2x mb-2"></i>
-                <p class="mb-0">No recent orders found.</p>
-            </div>
-        @else
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th scope="col">Order #</th>
-                            <th scope="col">Client</th>
-                            <th scope="col">Date</th>
-                            <th scope="col">Status</th>
-                            <th scope="col">Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($recentOrders as $order)
-                        <tr>
-                            <td class="fw-semibold">#{{ $order->id }}</td>
-                            <td>{{ $order->employee->name ?? 'N/A' }}</td>
-                            <td>{{ \Carbon\Carbon::parse($order->date)->format('d M Y') }}</td>
-                            <td>
-                                <span class="badge rounded-pill bg-{{ 
-                                    $order->status === 'Completed' ? 'success' : 
-                                    ($order->status === 'Pending' ? 'warning' : 'secondary') }}">
-                                    {{ $order->status }}
-                                </span>
-                            </td>
-                            <td class="fw-semibold">${{ number_format($order->price, 2) }}</td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        @endif
-    </div>
-</div> -->
-    <div class="container my-4">
+
+    <div class="container-fluid px-3 mt-4">
         <h4 class="mb-4 text-primary">Dashboard Overview</h4>
 
         <div class="row gy-4 gx-3">
@@ -193,7 +147,7 @@
                 datasets: [{
                     label: 'Total Sales (MMK)',
                     data: salesData,
-                    borderColor: '#2A9D8F',
+                    borderColor: 'rgb(0, 133, 117)',
                     backgroundColor: 'rgba(42, 157, 143, 0.2)',
                     tension: 0.3,
                     fill: true
@@ -209,7 +163,7 @@
                 datasets: [{
                     label: 'Items Sold',
                     data: @json($topItemsData),
-                    backgroundColor: 'rgba(255, 123, 14, 0.7)'
+                    backgroundColor: 'rgba(235, 110, 8, 0.7)'
                 }]
             },
             options: {
@@ -252,7 +206,7 @@
                     label: 'Feedback Ratings',
                     data: ratingsCounts,
                     backgroundColor: [
-                        '#e76f51', '#f4a261', '#e9c46a', '#2a9d8f', '#264653'
+                        'rgb(182, 48, 14)', 'rgba(235, 110, 8, 0.7)', 'rgb(230, 165, 3)', 'rgb(0, 133, 117)', '#264653'
                     ]
                 }]
             },
@@ -309,17 +263,26 @@
                             <td>{{ $invoice->year }}</td>
                             <td class="fw-semibold text-dark">{{ number_format($invoice->total_amount, 2) }} Kyats</td>
                             <td>
-                                <a href="{{ route('invoices.show', $invoice->invoice_id) }}" class="btn btn-sm btn-outline-primary">
-                                    View
+                                <a href="{{ route('invoices.show', $invoice->invoice_id) }}"
+                                    class="btn btn-sm"
+                                    style="background-color: #2A9D8F; color: white;">
+                                    <i class="fas fa-eye me-1"></i> View
                                 </a>
+
+
 
                                 {{-- Send Mail Button --}}
                                 <form action="{{ route('invoices.send-mail', $invoice->invoice_id) }}" method="POST" style="display:inline;">
                                     @csrf
-                                    <button type="submit" class="btn btn-sm btn-outline-success" onclick="return confirm('Send invoice email to {{ $invoice->employee->name }}?')">
-                                        Send Invoice
+                                    <button type="submit" class="btn btn-sm"
+                                        style="color: #2A9D8F; border: 1px solid #2A9D8F; background-color: transparent;"
+                                        onmouseover="this.style.backgroundColor='#2A9D8F'; this.style.color='white';"
+                                        onmouseout="this.style.backgroundColor='transparent'; this.style.color='#2A9D8F';"
+                                        onclick="return confirm('Send invoice email to {{ $invoice->employee->name }}?')">
+                                        <i class="fas fa-paper-plane me-1"></i> Send Invoice
                                     </button>
                                 </form>
+
                             </td>
 
                         </tr>
