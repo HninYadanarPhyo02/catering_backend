@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use Carbon\Carbon;
 use App\Models\Invoice;
 use App\Models\Attendance;
@@ -39,6 +38,7 @@ class AnnouncementController extends Controller
             ->count();
 
 
+        return view('announcement', compact('announcements','monthlyAnnouncementCount'));
         return view('announcement', compact('announcements','monthlyAnnouncementCount'));
     }
 

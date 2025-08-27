@@ -96,9 +96,6 @@
                                     style="color: rgb(182, 48, 14); border: 1px solid rgb(182, 48, 14); background-color: transparent;"
                                     onmouseover="this.style.backgroundColor='rgb(182, 48, 14)'; this.style.color='white';"
                                     onmouseout="this.style.backgroundColor='transparent'; this.style.color='rgb(182, 48, 14)';">
-                                    style="color: rgb(182, 48, 14); border: 1px solid rgb(182, 48, 14); background-color: transparent;"
-                                    onmouseover="this.style.backgroundColor='rgb(182, 48, 14)'; this.style.color='white';"
-                                    onmouseout="this.style.backgroundColor='transparent'; this.style.color='rgb(182, 48, 14)';">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
                             </form>

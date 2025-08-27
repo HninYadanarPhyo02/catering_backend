@@ -48,7 +48,7 @@
 
             <!-- Buttons -->
             <div class="d-flex gap-2 flex-wrap">
-                <button type="submit" class="btn shadow-sm text-white rounded-pill" style="background-color: #FFA726;">
+                <button type="submit" class="btn shadow-sm text-white" style="background-color: #FFA726;">
                     <i class="fas fa-filter me-1"></i> Apply
                 </button>
 
@@ -100,9 +100,9 @@
                         <td>{{ $record->foodmonthpriceByDate->food_name ?? 'N/A' }}</td>
                         <td>{{ \Carbon\Carbon::parse($record->date)->format('Y-m-d') }}</td>
                         <td>
-                            @if($record->status === 'Present')
+                            @if($record->status === 'present')
                                 <span class="badge text-white" style="background-color: #2A9D8F;">Present</span>
-                            @elseif($record->status === 'Absent')
+                            @elseif($record->status === 'absent')
                                 <span class="badge text-white" style="background-color: #E76F51;">Absent</span>
                             @else
                                 <span class="badge bg-secondary">{{ $record->status }}</span>

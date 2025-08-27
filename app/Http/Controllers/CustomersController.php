@@ -120,8 +120,6 @@ class CustomersController extends Controller
     public function update(Request $request, $emp_id)
     {
         $employee = Employee::where('emp_id', $emp_id)->firstOrFail();
-    {
-        $employee = Employee::where('emp_id', $emp_id)->firstOrFail();
 
         $validated = $request->validate([
             'name'  => 'required|string|max:255',
@@ -164,13 +162,6 @@ class CustomersController extends Controller
                 DB::table('registered_order')->where('emp_id', $employee->emp_id)->delete();
                 DB::table('feedback')->where('emp_id', $employee->emp_id)->delete();
             }
-
-            // Generate new emp_id based on new role
-            if ($newRole === 'admin') {
-                $lastAdmin = Employee::where('role', 'admin')
-                    ->where('emp_id', 'like', 'admin_%')
-                    ->orderByRaw("CAST(SUBSTRING(emp_id, 7) AS UNSIGNED) DESC")
-                    ->first();
             // Generate new emp_id based on new role
             if ($newRole === 'admin') {
                 $lastAdmin = Employee::where('role', 'admin')
@@ -191,38 +182,19 @@ class CustomersController extends Controller
                 $newNumber = $lastNumber + 1;
                 $newEmpId = 'admin_' . str_pad($newNumber, 2, '0', STR_PAD_LEFT);
                 $employee->password = Hash::make('admin123');
-            } else {
-                $lastEmp = Employee::where('role', 'employee')
-                    ->where('emp_id', 'like', 'emp_%')
-                    ->orderByRaw("CAST(SUBSTRING(emp_id, 5) AS UNSIGNED) DESC")
-                    ->first();
-
-                $lastNumber = $lastEmp ? intval(substr($lastEmp->emp_id, 4)) : 0;
-                $newNumber = $lastNumber + 1;
-                $newEmpId = 'emp_' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
-                $employee->password = Hash::make('emp123');
-            }
-                $lastNumber = $lastEmp ? intval(substr($lastEmp->emp_id, 4)) : 0;
-                $newNumber = $lastNumber + 1;
-                $newEmpId = 'emp_' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
-                $employee->password = Hash::make('emp123');
             }
 
-            $updateData['emp_id'] = $newEmpId;
-        }
+            
             $updateData['emp_id'] = $newEmpId;
         }
 
         $employee->update($updateData);
-        $employee->update($updateData);
 
         return redirect()->route('customers.index')->with('success', 'Employee updated successfully.');
     }
-        return redirect()->route('customers.index')->with('success', 'Employee updated successfully.');
-    }
 
 
-
+        }
 
     public function destroy($emp_id)
     {
