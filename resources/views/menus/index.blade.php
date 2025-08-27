@@ -79,12 +79,13 @@
                                 @csrf
                                 @method('PUT')
                                 <input type="text" name="name" class="form-control form-control-sm w-auto" value="{{ $menu->name }}" required>
-                                <button type="submit" class="btn btn-sm"
-                                    style="color: rgb(230, 165, 3); border: 1px solid rgb(230, 165, 3); background-color: transparent;"
-                                    onmouseover="this.style.backgroundColor='rgb(230, 165, 3)'; this.style.color='white';"
-                                    onmouseout="this.style.backgroundColor='transparent'; this.style.color='rgb(230, 165, 3)';">
-                                    <i class="fas fa-edit"></i>
-                                </button>
+                                <button type="submit"
+        class="btn btn-sm text-white px-3"
+        style="background-color: #E6A503;" 
+        title="Edit Announcement">
+    <i class="fas fa-edit me-1"></i>
+</button>
+
                             </form>
 
                             {{-- Delete Form --}}
@@ -92,12 +93,13 @@
                                 onsubmit="return confirm('Are you sure to delete ID {{ $menu->id }} ({{ $menu->name }})?');">
                                 @csrf
                                 @method('DELETE')
-                                <button class="btn btn-sm"
-                                    style="color: rgb(182, 48, 14); border: 1px solid rgb(182, 48, 14); background-color: transparent;"
-                                    onmouseover="this.style.backgroundColor='rgb(182, 48, 14)'; this.style.color='white';"
-                                    onmouseout="this.style.backgroundColor='transparent'; this.style.color='rgb(182, 48, 14)';">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
+                                <button type="submit"
+        class="btn btn-sm text-white px-3"
+        style="background-color: #E63946;"
+        title="Delete Announcement">
+    <i class="fas fa-trash me-1"></i>
+</button>
+
                             </form>
                         </div>
                     </td>
@@ -159,7 +161,17 @@
 @endif
 
 </div>
+<style>
+    button.btn:hover {
+    filter: brightness(85%);
+    color: white !important;
+}
+button.btn:hover {
+    filter: brightness(85%);
+    color: white !important;
+}
 
+</style>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const alertContainer = document.getElementById('ajax-alert-container');

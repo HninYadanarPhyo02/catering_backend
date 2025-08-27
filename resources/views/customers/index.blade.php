@@ -115,33 +115,32 @@
                             <td>
                                 @if($customer->emp_id !== 'admin_01')
                                 <!-- Edit Button -->
-                                <button
-                                    type="button"
-                                    class="btn btn-sm btn-edit-customer"
-                                    style="color: rgb(230, 165, 3); border: 1px solid rgb(230, 165, 3); background-color: transparent;"
-                                    onmouseover="this.style.backgroundColor='rgb(230, 165, 3)'; this.style.color='white';"
-                                    onmouseout="this.style.backgroundColor='transparent'; this.style.color='rgb(230, 165, 3)';"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#editCustomerModal"
-                                    data-id="{{ $customer->emp_id }}"
-                                    data-name="{{ $customer->name }}"
-                                    data-email="{{ $customer->email }}"
-                                    data-role="{{ $customer->role }}"
-                                    title="Edit {{ $customer->name }}">
-                                    <i class="fas fa-edit"></i>
-                                </button>
+                                <a href="javascript:void(0);" 
+   class="btn btn-sm text-white px-3" 
+   style="background-color: #E6A503;" 
+   data-bs-toggle="modal"
+   data-bs-target="#editCustomerModal"
+   data-id="{{ $customer->emp_id }}"
+   data-name="{{ $customer->name }}"
+   data-email="{{ $customer->email }}"
+   data-role="{{ $customer->role }}"
+   title="Edit {{ $customer->name }}">
+    <i class="fas fa-edit me-1"></i>
+</a>
+
 
                                 <!-- Delete Form -->
                                 <form action="{{ route('customers.destroy', $customer->emp_id) }}" method="POST" class="d-inline"
                                     onsubmit="return confirm('Are you sure to delete {{$customer->role}}: {{ $customer->name }}?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button class="btn btn-sm"
-                                        style="color: rgb(182, 48, 14); border: 1px solid rgb(182, 48, 14); background-color: transparent;"
-                                        onmouseover="this.style.backgroundColor='rgb(182, 48, 14)'; this.style.color='white';"
-                                        onmouseout="this.style.backgroundColor='transparent'; this.style.color='rgb(182, 48, 14)';">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
+                                    <button type="submit"
+        class="btn btn-sm text-white px-3"
+        style="background-color: #E63946;"
+        title="Delete Customer">
+    <i class="fas fa-trash me-1"></i>
+</button>
+
                                 </form>
                                 @else
                                 <!-- Disabled Edit/Delete -->
@@ -242,7 +241,18 @@
         </div>
     </div>
 </div>
+<style>
+    a.btn:hover {
+    filter: brightness(85%);
+    color: white !important;
+}
+button.btn:hover {
+    filter: brightness(85%);
+    color: white !important;
+}
 
+
+</style>
 <!-- Modal Data Population Script -->
 <script>
     document.querySelectorAll('.btn-edit-customer').forEach(button => {

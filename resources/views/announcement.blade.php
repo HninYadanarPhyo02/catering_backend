@@ -74,55 +74,54 @@
                         <td>{{ $announcement->created_at->format('Y-m-d H:i') }}</td>
                         <td class="text-nowrap">
                             <!-- View Button -->
-                            <button
-                                type="button"
-                                class="btn btn-sm"
-                                style="color:rgb(0, 133, 117); border: 1px solid rgb(0, 133, 117); background-color: transparent;"
-                                title="View Announcement"
-                                data-bs-toggle="modal"
-                                data-bs-target="#viewAnnouncementModal"
-                                data-id="{{ $announcement->id }}"
-                                data-title="{{ $announcement->title }}"
-                                data-date="{{ $announcement->date }}"
-                                data-text="{{ $announcement->text }}"
-                                data-created_at="{{ $announcement->created_at->format('F j, Y \a\t h:i A') }}"
-                                onmouseover="this.style.backgroundColor='rgb(0, 133, 117)'; this.style.color='white';"
-                                onmouseout="this.style.backgroundColor='transparent'; this.style.color='rgb(0, 133, 117)';"
-                            >
-                                <i class="far fa-eye"></i>
-                            </button>
+                            <a 
+    href="javascript:void(0);" 
+    class="btn btn-sm text-white px-3" 
+    style="background-color: #FFA726;" 
+    title="View Announcement"
+    data-bs-toggle="modal"
+    data-bs-target="#viewAnnouncementModal"
+    data-id="{{ $announcement->id }}"
+    data-title="{{ $announcement->title }}"
+    data-date="{{ $announcement->date }}"
+    data-text="{{ $announcement->text }}"
+    data-created_at="{{ $announcement->created_at->format('F j, Y \a\t h:i A') }}"
+>
+    <i class="far fa-eye me-1"></i> 
+</a>
+
 
                             <!-- Edit Button -->
-                            <button
-                                type="button"
-                                class="btn btn-sm"
-                                style="color: rgb(230, 165, 3); border: 1px solid rgb(230, 165, 3); background-color: transparent;"
-                                title="Edit Announcement"
-                                data-bs-toggle="modal"
-                                data-bs-target="#editAnnouncementModal"
-                                data-id="{{ $announcement->id }}"
-                                data-title="{{ $announcement->title }}"
-                                data-date="{{ $announcement->date }}"
-                                data-text="{{ $announcement->text }}"
-                                onmouseover="this.style.backgroundColor='rgb(230, 165, 3)'; this.style.color='white';"
-                                onmouseout="this.style.backgroundColor='transparent'; this.style.color='rgb(230, 165, 3)';"
-                            >
-                                <i class="fas fa-edit"></i>
-                            </button>
+                            <a 
+    href="javascript:void(0);" 
+    class="btn btn-sm text-white px-3" 
+    style="background-color: #E6A503;" 
+    title="Edit Announcement"
+    data-bs-toggle="modal"
+    data-bs-target="#editAnnouncementModal"
+    data-id="{{ $announcement->id }}"
+    data-title="{{ $announcement->title }}"
+    data-date="{{ $announcement->date }}"
+    data-text="{{ $announcement->text }}"
+>
+    <i class="fas fa-edit me-1"></i> 
+</a>
+
 
                             {{-- Delete Form --}}
                             <form action="{{ route('announcements.destroy', $announcement->id) }}" method="POST"
-                                class="d-inline-block"
-                                onsubmit="return confirm('Are you sure you want to delete this announcement ({{$announcement->title}}) on {{$announcement->date}}?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm"
-                                    style="color: rgb(182, 48, 14); border: 1px solid rgb(182, 48, 14); background-color: transparent;"
-                                    onmouseover="this.style.backgroundColor='rgb(182, 48, 14)'; this.style.color='white';"
-                                    onmouseout="this.style.backgroundColor='transparent'; this.style.color='rgb(182, 48, 14)';">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </form>
+      class="d-inline-block"
+      onsubmit="return confirm('Are you sure you want to delete this announcement ({{ $announcement->title }}) on {{ $announcement->date }}?')">
+    @csrf
+    @method('DELETE')
+    <button type="submit" 
+            class="btn btn-sm text-white px-3"
+            style="background-color: #E63946;" 
+            title="Delete Announcement">
+        <i class="fas fa-trash me-1"></i> 
+    </button>
+</form>
+
                         </td>
                     </tr>
                     @endforeach
@@ -357,7 +356,21 @@
   </div>
 </div>
 
+<style>
+  button.btn:hover {
+    filter: brightness(85%);
+    color: white !important;
+}
+a.btn:hover {
+    filter: brightness(85%); /* slightly darker on hover */
+    color: white !important;
+}
+a.btn:hover {
+    background-color: #b88602 !important; /* darker shade on hover */
+    color: white !important;
+}
 
+</style>
 {{-- Modal Scripts --}}
 <script>
   // View Modal populate

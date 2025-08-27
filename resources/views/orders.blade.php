@@ -114,16 +114,15 @@
                             <td>{{ \Carbon\Carbon::parse($order->date)->format('Y-m-d') }}</td>
                             <td>
                                 <!-- Edit Modal Trigger -->
-                                <button type="button" class="btn btn-sm btn-edit-order"
+                                <button type="button" class="btn btn-sm btn-edit-order text-white px-3"
                                         data-id="{{ $order->id }}"
                                         data-food_id="{{ $order->food_id }}"
                                         data-date="{{ $order->date }}"
                                         data-price="{{ $order->price }}"
                                         data-bs-toggle="modal"
                                         data-bs-target="#editOrderModal"
-                                        style="color:rgb(230, 165, 3); border: 1px solid rgb(230, 165, 3); background-color: transparent;"
-                                        onmouseover="this.style.backgroundColor='rgb(230, 165, 3)'; this.style.color='white';"
-                                        onmouseout="this.style.backgroundColor='transparent'; this.style.color='rgb(230, 165, 3)';">
+                                        style="background-color: #E6A503"
+                                        >
                                     <i class="fas fa-edit"></i>
                                 </button>
 
@@ -133,12 +132,13 @@
                                       onsubmit="return confirm('Are you sure you want to delete all orders on {{$order->date}} ?');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-sm"
-                                            style="color:rgb(182, 48, 14); border: 1px solid rgb(182, 48, 14); background-color: transparent;"
-                                            onmouseover="this.style.backgroundColor='rgb(182, 48, 14)'; this.style.color='white';"
-                                            onmouseout="this.style.backgroundColor='transparent'; this.style.color='rgb(182, 48, 14)';">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
+                                    <button type="submit"
+        class="btn btn-sm text-white px-3"
+        style="background-color: #E63946;"
+        title="Delete">
+    <i class="fas fa-trash me-1"></i>
+</button>
+
                                 </form>
                             </td>
                         </tr>
@@ -205,7 +205,7 @@
 <div class="modal fade" id="editOrderModal" tabindex="-1" aria-labelledby="editOrderModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content border-0 shadow">
-            <div class="modal-header text-white" style="background-color: #264653;">
+            <div class="modal-header text-white" style="background-color: #e76f51;">
                 <h5 class="modal-title" id="editOrderModalLabel"><i class="fas fa-edit me-2"></i> Edit Order</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -243,7 +243,13 @@
         </div>
     </div>
 </div>
+<style>
+    button.btn:hover {
+    filter: brightness(85%);
+    color: white !important;
+}
 
+</style>
 <!-- JavaScript -->
 <script>
     let itemIndex = 1;
