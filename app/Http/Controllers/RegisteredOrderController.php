@@ -42,7 +42,7 @@ class RegisteredOrderController extends Controller
         }
 
         // Execute query and get summary
-        $orderSummary = $query->paginate(3);
+        $orderSummary = $query->paginate(10);
         $menus = ModelsFoodMonthPrice::pluck('food_name')->unique();
 
 
@@ -166,7 +166,7 @@ class RegisteredOrderController extends Controller
                     $q->where('food_name', request('menu'));
                 });
             })
-            ->paginate(3);
+            ->paginate(10);
 
         $menus = ModelsFoodMonthPrice::distinct()->pluck('food_name');
 

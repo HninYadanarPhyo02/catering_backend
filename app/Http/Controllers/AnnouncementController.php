@@ -32,7 +32,7 @@ class AnnouncementController extends Controller
 
         // You can add date or message filters too if you want here
         // $announcements = $query->orderBy('created_at', 'desc')->paginate(6);
-        $announcements = $query->orderBy('created_at', 'desc')->paginate(5);
+        $announcements = $query->orderBy('created_at', 'desc')->paginate(10);
         $now = Carbon::now();
         $monthlyAnnouncementCount = Announcement::whereMonth('date', $now->month)
             ->whereYear('date', $now->year)

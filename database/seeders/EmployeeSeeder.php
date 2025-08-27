@@ -16,8 +16,8 @@ class EmployeeSeeder extends Seeder
     {
         Employee::create([
             'emp_id' => 'admin_01',
-            'name' => 'Admin',
-            'email' => 'admin@gmail.com',
+            'name' => 'AdminYadanar',
+            'email' => 'adminyadanar@gmail.com',
             'password' => Hash::make('admin123'),
             'role'=> 'admin',
         ]);

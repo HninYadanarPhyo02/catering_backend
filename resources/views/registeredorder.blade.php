@@ -1,85 +1,90 @@
 @extends('layouts.app')
 
-@section('title', 'Registered Orders')
+@section('title', 'User Orders')
 
 @section('content')
 <div class="container-fluid px-3 mt-4">
   <!-- Filter Form -->
-  <form method="GET" action="{{ route('registeredorder') }}" class="mb-5 p-4 border-0 rounded-4 shadow-sm bg-white">
-    <h4 class="fw-bold mb-4 pb-2 border-bottom" style="color: #2A9D8F; border-color: #2A9D8F; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-      <i class="bi bi-receipt me-2"></i> Registered Orders
-    </h4>
+  <div class="card shadow-sm rounded-3 mb-4 p-3" style="max-width: 650px; width: 100%; margin: auto; background-color: #fff8f1;">
+  <form method="GET" action="{{ route('registeredorder') }}" class="d-flex flex-wrap align-items-center gap-3 p-3 shadow-sm rounded-4" style="background-color: #fff3e6;">
 
-    <div class="row g-3 align-items-end">
-      <!-- Employee Select Dropdown -->
-      <div class="col-md-6 col-lg-4">
-        <label for="emp_id" class="form-label fw-semibold text-muted">Select User</label>
+    <!-- User Dropdown -->
+    <div class="flex-grow-1 flex-md-auto" style="min-width: 180px;">
+        <label for="emp_id" class="form-label fw-semibold mb-1">User</label>
         <select name="emp_id" id="emp_id" class="form-select shadow-sm rounded">
-          <option value="" disabled selected>All Users</option>
-          @foreach($employees as $employee)
-          @if(strtolower($employee->role) !== 'admin')
-          <option value="{{ $employee->emp_id }}" {{ request('emp_id') == $employee->emp_id ? 'selected' : '' }}>
-            {{ $employee->emp_id }} - {{ $employee->name }}
-          </option>
-          @endif
-          @endforeach
+            <option value="" selected>All Users</option>
+            @foreach($employees as $employee)
+                @if(strtolower($employee->role) !== 'admin')
+                    <option value="{{ $employee->emp_id }}" {{ request('emp_id') == $employee->emp_id ? 'selected' : '' }}>
+                        {{ $employee->emp_id }} - {{ $employee->name }}
+                    </option>
+                @endif
+            @endforeach
         </select>
-      </div>
-
-      <!-- Buttons -->
-      <div class="col-md-6 col-lg-4 d-flex gap-2 flex-wrap">
-        <button type="submit" class="btn px-4 text-white d-flex align-items-center gap-2 shadow-sm"
-          style="background-color: #2A9D8F;">
-         <i class="fas fa-filter me-1"></i> Apply Filter
-        </button>
-        <a href="{{ route('registeredorder') }}" class="btn btn-outline-secondary px-4 d-flex align-items-center gap-2 shadow-sm">
-          <i class="fas fa-sync-alt"></i> Reset
-        </a>
-      </div>
     </div>
-  </form>
 
+    <!-- Buttons -->
+    <div class="d-flex gap-2 flex-wrap">
+        <button type="submit" class="btn shadow-sm text-white" style="background-color: #FFA726;">
+            <i class="fas fa-filter me-1"></i> Apply
+        </button>
+
+        @if(request('emp_id'))
+        <a href="{{ route('registeredorder') }}" class="btn btn-outline-dark shadow-sm rounded-pill">
+            <i class="fas fa-sync-alt me-1"></i> Clear
+        </a>
+        @endif
+    </div>
+
+</form>
+  </div>
+<div class="container-fluid px-2 mt-4">
   @if($orderSummary->isEmpty())
   <div class="alert alert-warning text-center shadow-sm rounded-3">
     <i class="bi bi-exclamation-triangle me-2"></i> No registered orders found.
   </div>
   @else
-  <div class="card shadow-sm border-0 rounded-4">
-    <div class="card-header bg-white border-bottom fw-semibold text-secondary">
-            <i class="bi bi-people-fill me-2 text-primary"></i> Order Summary
+  <div class="card shadow-sm border-0 rounded-3">
+    <div class="card-header" style="background-color: #B2EBF2; border-bottom: 1px solid #dee2e6;">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-semibold text-dark">
+                <i class="bi bi-people-fill me-2 text-info"></i> Order Summary
+            </h5>
+            <span class="badge bg-info text-dark">{{ $orderSummary->count() }} Users</span>
         </div>
-    <div class="table-responsive">
-      <table class="table table-bordered table-hover align-middle mb-0">
-        <thead class="text-center text-uppercase" style="background-color: #E9F7F6; color: #264653;">
-          <tr>
-            <th style="width: 20%;">Employee ID</th>
-            <th style="width: 30%;">Employee Name</th>
-            <th style="width: 25%;">Total Orders</th>
-            <th style="width: 25%;">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          @foreach($orderSummary as $order)
-          <tr class="text-center">
-            <td class="fw-semibold text-muted">{{ $order->emp_id }}</td>
-            <td>{{ $order->employee?->name }}</td>
-            <td class="fw-bold text-success">{{ $order->order_count }}</td>
-            <td>
-              <a href="{{ route('registered-orders.details', $order->emp_id) }}"
-                class="btn btn-sm text-white px-3"
-                style="background-color: #2A9D8F;"
-                title="View Details">
-                <!-- <i class="fas fa-eye"></i> -->
-                <i class="far fa-eye"></i> View Details
-              </a>
-
-            </td>
-          </tr>
-          @endforeach
-        </tbody>
-      </table>
     </div>
-  </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead style="background-color: #E0F7FA;" class="text-center text-uppercase">
+                <tr>
+                    <th>Employee ID</th>
+                    <th>Employee Name</th>
+                    <th>Total Orders</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody class="text-center">
+                @foreach($orderSummary as $order)
+                <tr>
+                    <td class="fw-semibold text-dark">{{ $order->emp_id }}</td>
+                    <td class="text-dark">{{ $order->employee?->name ?? '-' }}</td>
+                    <td class="fw-semibold text-dark">{{ $order->order_count }}</td>
+                    <td>
+                        <a href="{{ route('registered-orders.details', $order->emp_id) }}" 
+                           class="btn btn-sm text-white px-3" 
+                           style="background-color: #FFA726;" 
+                           title="View Details">
+                            <i class="far fa-eye me-1"></i>
+                        </a>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
 
   <!-- Pagination -->
   @if ($orderSummary->hasPages())

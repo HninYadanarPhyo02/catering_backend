@@ -44,7 +44,7 @@
                     {{-- Date --}}
                     <div class="mb-4">
                         <label for="date" class="form-label fw-semibold">Order Date</label>
-                        <input type="date" name="date" id="date" class="form-control @error('date') is-invalid @enderror" value="{{ $order->date }}" required>
+                        <input type="date" name="date" id="date" class="form-control @error('date') is-invalid @enderror" value="{{ $order->date }}" readonly>
                         @error('date')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror

@@ -39,7 +39,7 @@ class AttendanceController extends Controller
         ->select('emp_id', DB::raw('count(*) as record_count'))
         ->groupBy('emp_id')
         ->with('employee')
-        ->paginate(3);
+        ->paginate(10);
 
     $employees = Employee::all();
     $attendance = Attendance::orderby('created_at','desc')->paginate(4);
@@ -64,7 +64,7 @@ public function details(Request $request, $emp_id)
 
     $attendanceRecords = $attendanceQuery
         ->orderBy('date', 'desc')
-        ->paginate(3);
+        ->paginate(10);
 
     // ✅ This is the key part you're missing
     $availableYears = Attendance::where('emp_id', $emp_id)

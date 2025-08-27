@@ -33,7 +33,7 @@ class FeedbacksController extends Controller
             ->select('emp_id', DB::raw('count(*) as total_feedback'))
             ->groupBy('emp_id')
             ->with('employee')
-            ->paginate(4)
+            ->paginate(10)
             ->appends($request->query()); // Keep filters during pagination
 
         $employees = Employee::whereIn('emp_id', function ($query) {
@@ -62,7 +62,7 @@ class FeedbacksController extends Controller
             $feedbackQuery->whereYear('updated_at', $request->input('year'));
         }
 
-        $feedbackList = $feedbackQuery->orderBy('updated_at', 'desc')->paginate(3);
+        $feedbackList = $feedbackQuery->orderBy('updated_at', 'desc')->paginate(10);
 
         $availableYears = Feedback::where('emp_id', $emp_id)
             ->selectRaw('YEAR(updated_at) as year')

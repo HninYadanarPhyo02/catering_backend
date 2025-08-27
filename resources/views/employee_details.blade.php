@@ -15,48 +15,43 @@
     </div>
 
     <!-- Always show filter form -->
-    <form method="GET" action="{{ route('registered-orders.details', $employee->emp_id) }}"
-        class="card shadow-sm p-4 mb-4 border-start border-5" style="border-color: #2A9D8F;">
-        <h5 class="fw-bold mb-3" style="color: #264653;">Order Filter</h5>
-        <div class="row g-3">
-            <!-- Order Date -->
-            <div class="col-md-3">
-                <label for="date" class="form-label fw-semibold text-muted">Order Date</label>
-                <input type="date"
-                    name="date"
-                    id="date"
-                    class="form-control border-0 shadow-sm"
-                    style="background-color: #F8F9FA;"
-                    value="{{ request('date') }}">
-            </div>
+    <div class="card shadow-sm rounded-3 mb-4 p-3" style="max-width: 650px; width: 100%; margin: auto; background-color: #fff8f1;">
+    <form method="GET" action="{{ route('registered-orders.details', $employee->emp_id) }}" class="d-flex flex-wrap align-items-center gap-2">
 
-            <!-- Menu -->
-            <div class="col-md-3">
-                <label for="menu" class="form-label fw-semibold text-muted">Menu</label>
-                <select name="menu"
-                    id="menu"
-                    class="form-select border-0 shadow-sm"
-                    style="background-color: #F8F9FA;">
-                    <option value="">All Menus</option>
-                    @foreach($menus as $menu)
+        <!-- Order Date -->
+        <div class="flex-grow-1 flex-md-auto" style="min-width: 180px;">
+            <label for="date" class="form-label fw-semibold mb-1">Order Date</label>
+            <input type="date" name="date" id="date" class="form-control shadow-sm rounded" value="{{ request('date') }}">
+        </div>
+
+        <!-- Menu -->
+        <div class="flex-grow-1 flex-md-auto" style="min-width: 180px;">
+            <label for="menu" class="form-label fw-semibold mb-1">Menu</label>
+            <select name="menu" id="menu" class="form-select shadow-sm rounded">
+                <option value="">All Menus</option>
+                @foreach($menus as $menu)
                     <option value="{{ $menu }}" {{ request('menu') == $menu ? 'selected' : '' }}>
                         {{ $menu }}
                     </option>
-                    @endforeach
-                </select>
-            </div>
+                @endforeach
+            </select>
+        </div>
 
-            <!-- Buttons -->
-            <div class="col-md-3 d-flex align-items-end gap-2">
-                <button type="submit" class="btn text-white" style="background-color: #2A9D8F;">
-                    <i class="fas fa-filter me-1"></i> Apply Filter
-                </button>
-                <a href="{{ route('registered-orders.details', $employee->emp_id) }}" class="btn btn-outline-secondary">
-                    <i class="fas fa-sync-alt me-1"></i> Reset
-                </a>
-            </div>
+        <!-- Buttons -->
+        <div class="d-flex gap-2 flex-wrap">
+            <button type="submit" class="btn shadow-sm text-white" style="background-color: #FFA726;">
+                <i class="fas fa-filter me-1"></i> Apply
+            </button>
+
+            @if(request('date') || request('menu'))
+            <a href="{{ route('registered-orders.details', $employee->emp_id) }}" class="btn btn-outline-dark shadow-sm">
+                <i class="fas fa-sync-alt me-1"></i> Clear
+            </a>
+            @endif
         </div>
     </form>
+</div>
+
 
     @if($orders->isEmpty())
     <div class="alert alert-warning text-center fw-semibold">
@@ -64,33 +59,35 @@
     </div>
     @else
     <div class="table-responsive shadow-sm rounded mb-4">
-        <table class="table table-bordered table-hover align-middle mb-0">
-            <thead class="table-light text-center">
-                <tr class="text-secondary">
-                    <th style="width: 200px;">Order ID</th>
-                    <th style="width: 150px;">Date</th>
-                    <th>Menu</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($orders as $order)
-                <tr class="text-center">
-                    <td class="fw-semibold text-primary">{{ $order->id }}</td>
-                    <td>{{ \Carbon\Carbon::parse($order->date)->format('Y-m-d') }}</td>
-                    <td class="text-start">
-                        @forelse($order->foodMonthPricesByDate as $menu)
-                        <div class="mb-1">
-                            <i class="fas fa-utensils text-success me-1"></i>
-                            {{ $menu->food_name }}
-                        </div>
-                        @empty
-                        <span class="text-muted">No menu</span>
-                        @endforelse
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
+        <div class="table-responsive">
+    <table class="table table-borderless align-middle mb-0">
+        <thead class="border-bottom text-center text-secondary">
+            <tr>
+                <th class="fw-semibold">Order ID</th>
+                <th class="fw-semibold" style="width: 180px;">Date</th>
+                <th class="fw-semibold text-start">Menu</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($orders as $order)
+            <tr class="text-center align-middle py-2 border-bottom">
+                <td class="text-primary fw-bold">{{ $order->id }}</td>
+                <td>{{ \Carbon\Carbon::parse($order->date)->format('Y-m-d') }}</td>
+                <td class="text-start">
+                    @forelse($order->foodMonthPricesByDate as $menu)
+                    <span class="d-inline-block bg-light text-success px-2 py-1 rounded me-1 mb-1">
+                        <i class="fas fa-utensils me-1"></i>{{ $menu->food_name }}
+                    </span>
+                    @empty
+                    <span class="text-muted fst-italic">No menu</span>
+                    @endforelse
+                </td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+</div>
+
     </div>
 
     {{-- Styled Pagination --}}

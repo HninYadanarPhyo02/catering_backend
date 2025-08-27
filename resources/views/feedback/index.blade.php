@@ -1,51 +1,42 @@
 @extends('layouts.app')
 
-@section('title', 'All Feedback')
+@section('title', 'Feedback')
 
 @section('content')
 <div class="container-fluid px-3 mt-4">
-    <form method="GET" action="{{ url('/feedbacks') }}" class="mb-5 p-4 border-0 rounded-4 shadow-sm bg-white">
-        <h4 class="fw-bold mb-4 pb-2 border-bottom" style="color: #2A9D8F; border-color: #2A9D8F; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-            <i class="bi bi-chat-left-text me-2"></i> User Feedback
-        </h4>
+    <div class="card shadow-sm rounded-3 mb-4 p-3" style="max-width: 650px; width: 100%; margin: auto; background-color: #fff8f1;">
+    <form method="GET" action="{{ url('/feedbacks') }}" class="d-flex flex-wrap align-items-center gap-2">
 
-        <div class="row g-3 align-items-end">
-            <!-- Employee Dropdown -->
-            <div class="col-md-6 col-lg-4">
-                <label for="emp_id" class="form-label fw-semibold text-muted" >Select User</label>
-                <select name="emp_id" id="emp_id" class="form-select shadow-sm rounded">
-                    <option value="" disabled  request('emp_id') ? '' : 'selected'}}>All Users</option>
-                    @foreach($employees as $employee)
+        <!-- User Dropdown -->
+        <div class="flex-grow-1 flex-md-auto" style="min-width: 180px;">
+            <label for="emp_id" class="form-label fw-semibold mb-1">User</label>
+            <select name="emp_id" id="emp_id" class="form-select shadow-sm rounded">
+                <option value="" selected>All Users</option>
+                @foreach($employees as $employee)
                     <option value="{{ $employee->emp_id }}" {{ request('emp_id') == $employee->emp_id ? 'selected' : '' }}>
                         {{ $employee->emp_id }} - {{ $employee->name }}
                     </option>
-                    @endforeach
-                </select>
-            </div>
+                @endforeach
+            </select>
+        </div>
 
-            <!-- Filter and Reset Buttons -->
-            <div class="col-md-6 d-flex flex-wrap gap-2 mt-2">
-                <button type="submit"
-                    class="btn px-4 py-2 rounded-3 shadow-sm text-white"
-                    style="background-color: #2A9D8F; border: none;">
-                    <i class="fas fa-filter me-1"></i> Apply Filter
-                </button>
+        <!-- Buttons -->
+        <div class="d-flex gap-2 flex-wrap">
+            <button type="submit" class="btn shadow-sm text-white" style="background-color: #FFA726;">
+                <i class="fas fa-filter me-1"></i> Apply
+            </button>
 
-                @if(request('emp_id'))
-                <a href="{{ url('/feedbacks') }}"
-                    class="btn btn-outline-secondary px-4 d-flex align-items-center gap-2 shadow-sm">
-                    <i class="fas fa-sync-alt"></i> Reset
-                </a>
-                @endif
-            </div>
+            @if(request('emp_id'))
+            <a href="{{ url('/feedbacks') }}" class="btn btn-outline-dark shadow-sm">
+                <i class="fas fa-sync-alt me-1"></i> Clear
+            </a>
+            @endif
         </div>
     </form>
-
-
-
-
+</div>
 
     <!-- Feedback Table -->
+     <div class="container-fluid px-3 mt-4">
     <div id="feedbackTable">
         @include('feedback.partials.feedback-table', ['feedbackList' => $feedbackList])
     </div>
@@ -92,7 +83,7 @@
         </nav>
     </div>
     @endif
-
+     </div>
 </div>
 @endsection
 

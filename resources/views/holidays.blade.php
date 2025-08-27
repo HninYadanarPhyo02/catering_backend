@@ -1,47 +1,50 @@
 @extends('layouts.app')
-@section('title','Menu')
+
+@section('title','Holidays')
+
 @section('content')
 <div class="container-fluid px-3 mt-4">
 
-    <!-- <h4 class="mb-4">Menu Management</h4> -->
-    {{-- Add New Holiday --}}
-    <form action="{{ route('holidays.store') }}" method="POST" class="card p-4 shadow-sm border-0 mb-4">
+    {{-- Add New Holiday Form --}}
+   <div class="card shadow-sm rounded-3 mb-4 p-3" style="max-width: 650px; width: 100%; margin: auto; background-color: #fff3e6;">
+    <form action="{{ route('holidays.store') }}" method="POST" class="d-flex flex-wrap gap-3 align-items-end">
         @csrf
-        <h4 class="fw-bold mb-4 d-flex justify-content-between align-items-center" style="color: #2A9D8F; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-            <span>
+        <div class="w-100 mb-2">
+            <h5 class="fw-bold mb-0" style="color: #e76f51;">
                 <i class="bi bi-plus-circle me-2"></i> Add New Holiday
-            </span>
-            <span class="badge" style="background-color: ; color: #2A9D8F; font-size: 0.95rem;">
-                Total Holidays : {{ $holidaysCount }}
-            </span>
-        </h4>
-
-
-        <div class="row g-3">
-            <div class="col-md-4">
-                <label for="name" class="form-label fw-semibold">Holiday Name</label>
-                <input type="text" name="name" id="name" class="form-control" placeholder="e.g. Christmas" value="{{ old('name') }}" required>
-            </div>
-
-            <div class="col-md-4">
-                <label for="date" class="form-label fw-semibold">Date</label>
-                <input type="date" name="date" id="date" class="form-control" value="{{ old('date') }}" required>
-            </div>
-
-            <div class="col-md-4">
-                <label for="description" class="form-label fw-semibold">Description</label>
-                <input type="text" name="description" id="description" class="form-control" placeholder="Optional" value="{{ old('description') }}">
-            </div>
+            </h5>
         </div>
 
-        <div class="d-flex justify-content-end mt-4">
-            <button type="submit" class="btn px-4" style="background-color: #2A9D8F; color: white;">
-                <i class="bi bi-plus-circle me-1"></i> Add Holiday
+        <div class="flex-grow-1 flex-md-auto" style="min-width: 150px;">
+            <label for="name" class="form-label fw-semibold mb-1">Holiday Name</label>
+            <input type="text" name="name" id="name" class="form-control shadow-sm rounded" placeholder="e.g. Christmas" value="{{ old('name') }}" required>
+        </div>
+
+        <div class="flex-grow-1 flex-md-auto" style="min-width: 150px;">
+            <label for="date" class="form-label fw-semibold mb-1">Date</label>
+            <input type="date" name="date" id="date" class="form-control shadow-sm rounded" value="{{ old('date') }}" required>
+        </div>
+
+        <div class="flex-grow-1 flex-md-auto" style="min-width: 180px;">
+            <label for="description" class="form-label fw-semibold mb-1">Description</label>
+            <input type="text" name="description" id="description" class="form-control shadow-sm rounded" placeholder="Optional" value="{{ old('description') }}">
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap ms-auto">
+            <button type="submit" class="btn text-white shadow-sm d-flex align-items-center gap-1" style="background-color: #f4a261;">
+                <i class="bi bi-plus-circle"></i> Add Holiday
             </button>
+            <span class="badge bg-secondary align-self-center">Total Holidays: {{ $holidaysCount }}</span>
         </div>
     </form>
+</div>
 
-    <!-- Holiday Table -->
+</div>
+
+
+    {{-- Holiday Table --}}
+     <div class="container-fluid px-4 mt-4">
+     <div class="card mb-4 shadow-sm">
     <table class="table table-hover table-striped align-middle">
         <thead class="table-secondary text-uppercase text-muted">
             <tr>
@@ -59,15 +62,26 @@
                 <td class="text-muted">{{ $holiday->description ?? '-' }}</td>
                 <td>
                     <div class="d-flex gap-2">
-                        <a href="{{ route('holidays.edit', $holiday->h_id) }}"
-                            class="btn btn-sm"
+                        <!-- Edit Button triggers modal -->
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-edit-holiday"
                             style="color: rgb(230, 165, 3); border: 1px solid rgb(230, 165, 3); background-color: transparent;"
                             onmouseover="this.style.backgroundColor='rgb(230, 165, 3)'; this.style.color='white';"
                             onmouseout="this.style.backgroundColor='transparent'; this.style.color='rgb(230, 165, 3)';"
-                            title="Edit Holiday" aria-label="Edit holiday {{ $holiday->name }}">
+                            title="Edit Holiday"
+                            aria-label="Edit holiday {{ $holiday->name }}"
+                            data-bs-toggle="modal"
+                            data-bs-target="#editHolidayModal"
+                            data-id="{{ $holiday->h_id }}"
+                            data-name="{{ $holiday->name }}"
+                            data-date="{{ $holiday->date }}"
+                            data-description="{{ $holiday->description }}"
+                        >
                             <i class="fas fa-edit"></i>
-                        </a>
+                        </button>
 
+                        {{-- Delete Form --}}
                         <form action="{{ route('holidays.destroy', $holiday->h_id) }}" method="POST"
                             onsubmit="return confirm('Are you sure you want to delete this holiday?')" class="m-0 p-0">
                             @csrf
@@ -90,7 +104,9 @@
             @endforelse
         </tbody>
     </table>
-    <!-- pagination links -->
+     </div>
+     </div>
+    {{-- Pagination links --}}
     @if ($holidays->hasPages())
     <div class="d-flex justify-content-end mt-4">
         <nav>
@@ -133,6 +149,66 @@
         </nav>
     </div>
     @endif
+</div>
 
+<!-- Edit Holiday Modal -->
+<div class="modal fade" id="editHolidayModal" tabindex="-1" aria-labelledby="editHolidayModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header text-white" style="background-color: #264653;">
+        <h5 class="modal-title" id="editHolidayModalLabel"><i class="fas fa-edit me-2"></i> Edit Holiday</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
 
-    @endsection
+      <form id="editHolidayForm" method="POST" action="">
+        @csrf
+        @method('PUT')
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="edit_name" class="form-label fw-semibold">Holiday Name</label><span class="text-danger"> * </span>
+            <input type="text" name="name" id="edit_name" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label for="edit_date" class="form-label fw-semibold">Date</label><span class="text-danger"> * </span>
+            <input type="date" name="date" id="edit_date" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label for="edit_description" class="form-label fw-semibold">Description</label>
+            <input type="text" name="description" id="edit_description" class="form-control">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-lg me-1"></i> Cancel
+          </button>
+          <button type="submit" class="btn" style="background-color: #2A9D8F; color: white;">
+            <i class="bi bi-check-lg me-1"></i> Update Holiday
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{{-- Scripts --}}
+<script>
+  document.querySelectorAll('.btn-edit-holiday').forEach(button => {
+    button.addEventListener('click', () => {
+      const id = button.getAttribute('data-id');
+      const name = button.getAttribute('data-name');
+      const date = button.getAttribute('data-date');
+      const description = button.getAttribute('data-description') ?? '';
+
+      // Populate modal inputs
+      document.getElementById('edit_name').value = name;
+      document.getElementById('edit_date').value = date;
+      document.getElementById('edit_description').value = description;
+
+      // Update form action URL dynamically
+      document.getElementById('editHolidayForm').action = `/holidays/${id}`;
+    });
+  });
+</script>
+
+@endsection

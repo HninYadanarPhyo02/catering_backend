@@ -16,82 +16,57 @@ use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
-    // Display all orders
-    // public function index()
+    // public function index(Request $request)
     // {
-    //     $orders = FoodMonthPrice::all();
+    //     $search = $request->input('search');
+
     //     $foods = FoodMenu::all();
+
+    //     $ordersQuery = FoodMonthPrice::query();
+
+    //     if ($search) {
+    //         $ordersQuery->where(function ($query) use ($search) {
+    //             // Search by related food name, assuming FoodMonthPrice has 'food_id'
+    //             $query->whereHas('foodMenu', function ($q) use ($search) {
+    //                 $q->where('name', 'like', "%{$search}%");
+    //             })
+    //                 ->orWhere('date', 'like', "%{$search}%")
+    //                 ->orWhere('price', 'like', "%{$search}%");
+    //         });
+    //     }
+
+    //     $orders = $ordersQuery->);
 
     //     return view('orders', compact('orders', 'foods'));
     // }
 
-
-    public function index(Request $request)
+   public function index(Request $request)
     {
         $search = $request->input('search');
-
         $foods = FoodMenu::all();
 
         $ordersQuery = FoodMonthPrice::query();
 
         if ($search) {
             $ordersQuery->where(function ($query) use ($search) {
-                // Search by related food name, assuming FoodMonthPrice has 'food_id'
                 $query->whereHas('foodMenu', function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%");
                 })
-                    ->orWhere('date', 'like', "%{$search}%")
-                    ->orWhere('price', 'like', "%{$search}%");
+                ->orWhere('date', 'like', "%{$search}%")
+                ->orWhere('price', 'like', "%{$search}%");
             });
         }
 
-        $orders = $ordersQuery->paginate(5);
+        $orders = $ordersQuery->paginate(10);
+
+        if ($request->ajax()) {
+            $view = view('orders.partials.orders_table_rows', compact('orders'))->render();
+            return response()->json(['html' => $view]);
+        }
 
         return view('orders', compact('orders', 'foods'));
     }
 
-    // public function store(Request $request)
-    // {
-    //     $validated = $request->validate([
-    //         'price' => 'required|numeric',
-    //         'items' => 'required|array|min:1',
-    //         'items.*.food_id' => 'required|exists:foodmenu,food_id',
-    //         'items.*.date' => 'required|date',
-    //     ]);
-
-    //     $price = $validated['price'];
-    //     $items = $validated['items'];
-    //     $inserted = [];
-    //     $skipped = [];
-
-    //     foreach ($items as $item) {
-    //         $existing = FoodMonthPrice::where('date', $item['date'])->first();
-    //         if ($existing) {
-    //             $skipped[] = $item['date'];
-    //             continue;
-    //         }
-
-    //         $food = FoodMenu::where('food_id', $item['food_id'])->first();
-    //         $foodName = $food->name ?? 'Unknown';
-
-    //         $order = FoodMonthPrice::create([
-    //             'food_id' => $item['food_id'],
-    //             'food_name' => $foodName,
-    //             'date' => $item['date'],
-    //             'price' => $price,
-    //         ]);
-
-    //         if ($order) {
-    //             $inserted[] = $item['date'];
-    //         }
-    //     }
-
-    //     if (count($inserted)) {
-    //         return redirect('/orders')->with('success', 'Orders added: ' . implode(', ', $inserted));
-    //     } else {
-    //         return back()->withErrors(['error' => 'No new orders were inserted (possibly all dates already exist).'])->withInput();
-    //     }
-    // }
 
     public function store(Request $request)
     {
@@ -161,28 +136,62 @@ class OrderController extends Controller
 
 
     // Update an order
+    // public function update(Request $request, FoodMonthPrice $order)
+    // {
+    //     //   dd($request->all());
+    //     $request->validate([
+    //         'food_id' => 'required|exists:foodmenu,food_id', // Correct table for foreign key validation
+    //         'date' => 'required|date',
+    //         'price' => 'required|numeric'
+    //     ]);
+    //     $food = FoodMenu::where('food_id', $request->food_id)->first();
+
+    //     // dd($food);
+    //     $order->update([
+    //         'food_id' => $request->food_id,
+    //         'food_name' => $food->name,
+    //         'date' => $request->date,
+    //         'price' => $request->price
+    //     ]);
+    //     // dd($order->toArray());
+
+    //     // return redirect('/orders')->with('success', 'Order added!');  
+    //     return redirect('/orders')->with('success', 'Order updated successfully.');
+    // }
     public function update(Request $request, FoodMonthPrice $order)
-    {
-        //   dd($request->all());
-        $request->validate([
-            'food_id' => 'required|exists:foodmenu,food_id', // Correct table for foreign key validation
-            'date' => 'required|date',
-            'price' => 'required|numeric'
-        ]);
-        $food = FoodMenu::where('food_id', $request->food_id)->first();
+{
+    $request->validate([
+        'food_id' => 'required|exists:foodmenu,food_id',
+        'date' => 'required|date',
+        'price' => 'required|numeric'
+    ]);
 
-        // dd($food);
-        $order->update([
-            'food_id' => $request->food_id,
-            'food_name' => $food->name,
-            'date' => $request->date,
-            'price' => $request->price
-        ]);
-        // dd($order->toArray());
+    $food = FoodMenu::where('food_id', $request->food_id)->first();
 
-        // return redirect('/orders')->with('success', 'Order added!');  
-        return redirect('/orders')->with('success', 'Order updated successfully.');
+    $order->update([
+        'food_id' => $request->food_id,
+        'food_name' => $food->name,
+        'date' => $request->date,
+        'price' => $request->price
+    ]);
+
+    // AJAX request
+    if ($request->ajax()) {
+        return response()->json([
+            'success' => true,
+            'order' => [
+                'id' => $order->id,
+                'food_name' => $food->name,
+                'price' => $request->price,
+                'date' => $request->date
+            ]
+        ]);
     }
+
+    // Normal form submission
+    return redirect('/orders')->with('success', 'Order updated successfully.');
+}
+
 
     // Delete an order
 

@@ -23,46 +23,52 @@ use Illuminate\Support\Facades\Validator;
 class CustomersController extends Controller
 {
 
+    // public function index(Request $request)
+    // {
+    //     $query = Employee::query();
+
+    //     if ($request->filled('role')) {
+    //         $query->where('role', $request->role);
+    //     }
+    //     $employeeCount = Employee::where('role', 'employee')->count();
+    //     $adminCount = Employee::where('role', 'admin')->count();
+
+    //     $customers = $query->orderBy('created_at', 'desc')->paginate(5);
+
+    //     return view('customers.index', compact('customers','employeeCount','adminCount'));
+    // }
     public function index(Request $request)
-    {
-        $query = Employee::query();
+{
+    $query = Employee::query();
 
-        if ($request->filled('role')) {
-            $query->where('role', $request->role);
-        }
-        $employeeCount = Employee::where('role', 'employee')->count();
-        $adminCount = Employee::where('role', 'admin')->count();
-
-        $customers = $query->orderBy('created_at', 'desc')->paginate(5);
-
-        return view('customers.index', compact('customers','employeeCount','adminCount'));
+    if ($request->filled('role')) {
+        $query->where('role', $request->role);
     }
 
-    //     public function store(Request $request)
-    // {
-    //     $request->validate([
-    //         'name'  => 'required|string|max:255',
-    //         'email' => 'required|email|unique:employee,email',
-    //     ]);
+    $employeeCount = Employee::where('role', 'employee')->count();
+    $adminCount = Employee::where('role', 'admin')->count();
 
-    //     // Generate unique emp_id
-    //     $newNumber = 1;
-    //     do {
-    //         $newEmpId = 'emp_' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
-    //         $exists = Employee::where('emp_id', $newEmpId)->exists();
-    //         $newNumber++;
-    //     } while ($exists);
+    $customers = $query->orderBy('created_at', 'desc')->paginate(10);
 
-    //     Employee::create([
-    //         'id' => (string) Str::uuid(),
-    //         'emp_id' => $newEmpId,
-    //         'name'  => $request->name,
-    //         'email' => $request->email,
-    //         'password' => Hash::make('emp123'),
-    //     ]);
+    // If AJAX request, return only the table partial + counts as JSON
+    if ($request->ajax()) {
+        $table = view('customers.partials.table', compact('customers'))->render();
 
-    //     return redirect()->route('customers.index')->with('success', 'New customer is added successfully.');
-    // }
+        return response()->json([
+            'table' => $table,
+            'counts' => [
+                'employee' => $employeeCount,
+                'admin' => $adminCount,
+            ]
+        ]);
+    }
+
+    // Normal full page load
+    return view('customers.index', compact('customers','employeeCount','adminCount'));
+}
+
+
+
     public function store(Request $request)
     {
         $request->validate([
@@ -103,67 +109,13 @@ class CustomersController extends Controller
         return redirect()->route('customers.index')->with('success', 'New customer is added successfully.');
     }
 
+    
 
     public function edit($emp_id)
     {
         $customer = Employee::where('emp_id', $emp_id)->firstOrFail();
         return view('customers.edit', compact('customer'));
     }
-    // public function update(Request $request, $emp_id)
-    // {
-    //     $employee = Employee::where('emp_id', $emp_id)->firstOrFail();
-
-    //     $validated = $request->validate([
-    //         'name'  => 'required|string|max:255',
-    //         'email' => 'required|email|unique:employee,email,' . $employee->emp_id . ',emp_id',
-    //         'role'  => 'required|in:admin,employee',
-    //     ]);
-
-    //     $newRole = $validated['role'];
-    //     $roleChanged = $newRole !== $employee->role;
-
-    //     // If role has changed, delete associated data before changing emp_id
-    //     if ($roleChanged) {
-    //         RegisteredOrder::where('emp_id', $employee->emp_id)->delete();
-    //         Attendance::where('emp_id', $employee->emp_id)->delete();
-    //         Invoice::where('emp_id', $employee->emp_id)->delete();
-    //         Feedback::where('emp_id', $employee->emp_id)->delete();
-    //     }
-
-    //     // Generate new emp_id and password based on new role
-    //     if ($newRole === 'admin') {
-    //         $lastAdmin = Employee::where('role', 'admin')
-    //             ->where('emp_id', 'like', 'admin_%')
-    //             ->orderByRaw("CAST(SUBSTRING(emp_id, 7) AS UNSIGNED) DESC")
-    //             ->first();
-
-    //         $lastNumber = $lastAdmin ? intval(substr($lastAdmin->emp_id, 6)) : 0;
-    //         $newNumber = $lastNumber + 1;
-    //         $newEmpId = 'admin_' . str_pad($newNumber, 2, '0', STR_PAD_LEFT);
-    //         $newPassword = Hash::make('admin123');
-    //     } else {
-    //         $lastEmp = Employee::where('role', 'employee')
-    //             ->where('emp_id', 'like', 'emp_%')
-    //             ->orderByRaw("CAST(SUBSTRING(emp_id, 5) AS UNSIGNED) DESC")
-    //             ->first();
-
-    //         $lastNumber = $lastEmp ? intval(substr($lastEmp->emp_id, 4)) : 0;
-    //         $newNumber = $lastNumber + 1;
-    //         $newEmpId = 'emp_' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
-    //         $newPassword = Hash::make('emp123');
-    //     }
-
-    //     // Update employee with new info
-    //     $employee->update([
-    //         'name'     => $validated['name'],
-    //         'email'    => $validated['email'],
-    //         'role'     => $newRole,
-    //         'emp_id'   => $newEmpId,
-    //         'password' => $newPassword,
-    //     ]);
-
-    //     return redirect()->route('customers.index')->with('success', 'Employee updated successfully.');
-    // }
 
     public function update(Request $request, $emp_id)
     {

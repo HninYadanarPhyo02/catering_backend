@@ -106,14 +106,33 @@ class HolidaysController extends Controller
     }
 
 
+    // public function update(Request $request, $h_id)
+    // {
+    //     $holiday = Holiday::where('h_id', $h_id)->first();
+
+    //     $request->validate([
+    //         'name' => 'required|string|max:255',
+    //         'date' => 'required|date|unique:holidays,date,' . $h_id . ',h_id',
+    //         'description' => 'required|string|max:1000',
+    //     ]);
+
+    //     $holiday->update([
+    //         'name' => $request->name,
+    //         'date' => $request->date,
+    //         'description' => $request->description,
+    //     ]);
+
+
+    //     return redirect()->route('holidays')->with('success', 'Customer updated successfully.');
+    // }
     public function update(Request $request, $h_id)
     {
-        $holiday = Holiday::where('h_id', $h_id)->first();
+        $holiday = Holiday::where('h_id', $h_id)->firstOrFail();
 
         $request->validate([
             'name' => 'required|string|max:255',
             'date' => 'required|date|unique:holidays,date,' . $h_id . ',h_id',
-            'description' => 'required|string|max:1000',
+            'description' => 'nullable|string|max:1000', // made nullable here
         ]);
 
         $holiday->update([
@@ -122,9 +141,10 @@ class HolidaysController extends Controller
             'description' => $request->description,
         ]);
 
-
-        return redirect()->route('holidays')->with('success', 'Customer updated successfully.');
+        return redirect()->route('holidays')->with('success', 'Holiday updated successfully.');
     }
+
+
 
     public function edit($h_id)
     {

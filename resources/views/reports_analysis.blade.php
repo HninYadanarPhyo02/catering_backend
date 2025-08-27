@@ -1,13 +1,12 @@
 @extends('layouts.app')
-@section('title','Orders')
+@section('title','Analytics & Reports')
 
 @section('content')
 <style>
     .chart-container {
         position: relative;
         width: 100%;
-        padding-top: 40%;
-        /* Adjust chart height here (40% = shorter height) */
+        min-height: 300px; /* compact & responsive */
     }
 
     .chart-container canvas {
@@ -19,46 +18,52 @@
     }
 </style>
 
-<div class="container-fluid px-3 mt-4">
-    <h3 class="mb-4" style="color: rgba(235, 110, 8, 0.7);">Reports & Analysis</h3>
+<div class="container-fluid px-4 mt-4">
+    <h3 class="mb-4" style="color: #e76f51; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">Reports & Analysis</h3>
 
     <section id="analytics">
         <div class="row g-3">
+
+            <!-- Sales Overview -->
             <div class="col-md-6">
-                <div class="card p-3 shadow-sm" style="background-color: #F8F9FA;">
-                    <h5 class="text-primary mb-2">Sales Overview</h5>
+                <div class="card p-3 shadow-sm" style="background-color: #fff3e6;">
+                    <h5 class="fw-bold mb-2" style="color: #f4a261;">Sales Overview</h5>
                     <div class="chart-container">
                         <canvas id="salesChart"></canvas>
                     </div>
                 </div>
             </div>
 
+            <!-- User Engagement -->
             <div class="col-md-6">
-                <div class="card p-3 shadow-sm" style="background-color: #F8F9FA;">
-                    <h5 class="text-primary mb-2">User Engagement</h5>
+                <div class="card p-3 shadow-sm" style="background-color: #fff3e6;">
+                    <h5 class="fw-bold mb-2" style="color: #f4a261;">User Engagement</h5>
                     <div class="chart-container">
                         <canvas id="engagementChart"></canvas>
                     </div>
                 </div>
             </div>
 
+            <!-- Top Selling Items -->
             <div class="col-md-6">
-                <div class="card p-3 shadow-sm" style="background-color: #F8F9FA;">
-                    <h5 class="text-primary mb-2">Top Selling Items</h5>
+                <div class="card p-3 shadow-sm" style="background-color: #fff3e6;">
+                    <h5 class="fw-bold mb-2" style="color: #f4a261;">Top Selling Items</h5>
                     <div class="chart-container">
                         <canvas id="topSellingChart"></canvas>
                     </div>
                 </div>
             </div>
 
+            <!-- Monthly Sale Trends -->
             <div class="col-md-6">
-                <div class="card p-3 shadow-sm" style="background-color: #F8F9FA;">
-                    <h5 class="text-primary mb-2">Monthly Sale Trends</h5>
+                <div class="card p-3 shadow-sm" style="background-color: #fff3e6;">
+                    <h5 class="fw-bold mb-2" style="color: #f4a261;">Monthly Sale Trends</h5>
                     <div class="chart-container">
                         <canvas id="monthlyTrendChart"></canvas>
                     </div>
                 </div>
             </div>
+
         </div>
     </section>
 </div>
@@ -77,13 +82,33 @@
     const commonOptions = {
         responsive: true,
         maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                labels: {
+                    color: '#264653', // text color
+                    font: { weight: 'bold' }
+                }
+            },
+            tooltip: {
+                backgroundColor: '#f4a261',
+                titleColor: '#fff',
+                bodyColor: '#fff'
+            }
+        },
         scales: {
-            y: {
-                beginAtZero: true
+            x: { 
+                ticks: { color: '#264653' },
+                grid: { color: '#ffe6cc' } 
+            },
+            y: { 
+                beginAtZero: true,
+                ticks: { color: '#264653' },
+                grid: { color: '#ffe6cc' }
             }
         }
     };
 
+    // Sales Overview
     new Chart(document.getElementById('salesChart'), {
         type: 'bar',
         data: {
@@ -91,12 +116,13 @@
             datasets: [{
                 label: 'Sales',
                 data: salesData,
-                backgroundColor: 'rgba(12, 153, 137, 0.7)'
+                backgroundColor: 'rgba(42, 157, 143, 0.8)'
             }]
         },
         options: commonOptions
     });
 
+    // User Engagement
     new Chart(document.getElementById('engagementChart'), {
         type: 'line',
         data: {
@@ -104,14 +130,16 @@
             datasets: [{
                 label: 'Active Users',
                 data: engagementData,
-                borderColor: 'rgba(235, 110, 8, 0.7)',
-                fill: false,
+                borderColor: 'rgba(231, 111, 81, 0.8)',
+                backgroundColor: 'rgba(231, 111, 81, 0.2)',
+                fill: true,
                 tension: 0.3
             }]
         },
         options: commonOptions
     });
 
+    // Top Selling Items
     new Chart(document.getElementById('topSellingChart'), {
         type: 'bar',
         data: {
@@ -119,84 +147,37 @@
             datasets: [{
                 label: 'Items Sold',
                 data: topSellingData,
-                backgroundColor: 'rgba(235, 110, 8, 0.7)',
-                borderRadius: 4
+                backgroundColor: 'rgba(244, 162, 97, 0.8)',
+                borderRadius: 6
             }]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    callbacks: {
-                        title: function(tooltipItems) {
-                            return tooltipItems[0].label;
-                        }
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    ticks: {
-                        autoSkip: false,
-                        maxRotation: 45,
-                        minRotation: 45,
-                        font: {
-                            size: 10
-                        },
-                        callback: function(value, index, values) {
-                            const label = this.getLabelForValue(value);
-                            return label.length > 15 ? label.substring(0, 15) + '…' : label;
-                        }
-                    }
-                },
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
-                    }
-                }
-            }
+            ...commonOptions,
+            plugins: { legend: { display: false } }
         }
     });
 
-
-    // ✅ Dual Vertical Bars: Registered Orders vs Attendance (last 6 months)
+    // Monthly Sale Trends (Dual Bars)
     new Chart(document.getElementById('monthlyTrendChart'), {
         type: 'bar',
         data: {
             labels: monthlyTrendLabels,
-            datasets: [{
+            datasets: [
+                {
                     label: 'Registered Orders',
                     data: monthlyRegisteredData,
-                    backgroundColor: 'rgba(12, 153, 137, 0.7)'
+                    backgroundColor: 'rgba(42, 157, 143, 0.8)',
+                    borderRadius: 4
                 },
                 {
-                    label: 'Attendance (Checked Out)',
-                    data: monthlyAttendanceData.map(val => val ?? 0), // fallback to 0 if null/undefined
-                    backgroundColor: 'rgba(235, 110, 8, 0.7)'
+                    label: 'Attendance',
+                    data: monthlyAttendanceData.map(val => val ?? 0),
+                    backgroundColor: 'rgba(231, 111, 81, 0.8)',
+                    borderRadius: 4
                 }
             ]
         },
-        options: {
-            ...commonOptions,
-            plugins: {
-                tooltip: {
-                    enabled: true
-                },
-            },
-            scales: {
-                y: {
-                    beginAtZero: true
-                },
-                x: {
-                    stacked: false
-                }
-            }
-        }
+        options: commonOptions
     });
 </script>
 @endsection

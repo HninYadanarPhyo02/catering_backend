@@ -23,7 +23,7 @@
         }
 
         .invoice-header {
-            background-color: #264653;
+            background-color: #2a9d8f;
             color: #fff;
             padding: 20px 30px;
         }

@@ -20,7 +20,7 @@
         }
 
         .login-container {
-            background-color: #1f2937; 
+            background-color: #f39f20ff; 
             padding: 50px;
             border-radius: 10px;
             box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
@@ -49,20 +49,20 @@
         <!-- <img src="{{ asset('images/food.png') }}" alt="System Logo" class="img-fluid" style="max-height: 100px;"> -->
         <div class="d-flex justify-content-center mb-3">
     <img src="{{ asset('images/food.png') }}" alt="System Logo" 
-         class="img-fluid" style="max-height: 100px;">
+         class="img-fluid" style="max-height: 120px;">
 </div>
 
         <form action="{{ route('loginAuth') }}" method="post">
             @csrf
             <div class="mb-3">
-            <label for="email" class="form-label" style="color:#ffffff;">Email address</label>
+            <label for="email" class="form-label" style="color:dark;">Email address</label>
             <input type="email" name="email" class="form-control form-control-lg bg-light fs-6 @error('email') is-invalid @enderror"  placeholder="Email address">
                 @error('email')
                     <div class="is-invalid my-1"><span class="text-danger fs-6">User's Email and Password does not match.</span></div>
                 @enderror           
             </div>
             <div class="mb-4">
-                <label for="password" class="form-label" style="color:#ffffff">Password</label>
+                <label for="password" class="form-label" style="color:dark">Password</label>
               <input type="password" class="form-control form-control-lg bg-light fs-6 @error('password') is-invalid @enderror" name="password" placeholder="Password">
                 @error('password')
                     <div class="is-invalid mb-1"><span class="text-danger">User's Email and Password does not match.</span></div>
@@ -70,15 +70,15 @@
              </div>
                 <div class="input-group mb-4 d-flex justify-content-between">
                 <div></div>
-                <div class="col-md-4">
-                    <small><a href="{{ url('/register') }}" style="color: #ffffff; text-align: left !important;">Register?</a></small>
-                </div>
-                <div class="forgot col-md-6">
-                    <small><a href="{{ route('forgotPasswordPage') }} " style="color: #ffffff">Reset Password?</a></small>
+                <!-- <div class="col-md-4">
+                    <small><a href="#" style="color: #ffffff; text-align: left !important;">Register?</a></small>
+                </div> -->
+                <div class="forgot col-md-10">
+                    <small><a href="#" style="color: #ffffff"></a></small>
                 </div>
             </div>
             <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-primary" style="background-color:rgb(140, 149, 153); color: black; border: 2px solid rgb(140, 149, 153);">Login</button>
+                <button type="submit" class="btn btn-primary" style="background-color : white; color: black; border: 2px solid white;">Login</button>
             </div>
          </form> 
     

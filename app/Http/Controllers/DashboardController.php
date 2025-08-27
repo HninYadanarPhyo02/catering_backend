@@ -23,7 +23,7 @@ class DashboardController extends Controller
             ->whereYear('date', Carbon::now()->year)
             ->distinct('food_id')
             ->count('food_id');
-            
+
         $monthlyavailable = FoodMonthPrice::whereMonth('date', Carbon::now()->month)
             ->whereYear('date', Carbon::now()->year)
             ->count();
@@ -93,6 +93,12 @@ class DashboardController extends Controller
         $ratingsCounts = array_values($ratingsData);
         $Month = date('n'); // e.g. 7
         $Year = date('Y');  // e.g. 2025
+        $sales = DB::table('invoice_details')
+            ->select('date', DB::raw('SUM(price) as total_amount'))
+            ->whereNull('deleted_at') // only active items
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
 
         $monthlyInvoices = Invoice::with('employee')
             ->where('month', $Month)
@@ -100,6 +106,8 @@ class DashboardController extends Controller
             ->orderByDesc('year')
             ->orderByDesc('month')
             ->limit(5)->get();
+        $salesLabels = $sales->pluck('date');       // ['2025-08-01', '2025-08-02', ...]
+        $salesData = $sales->pluck('total_amount'); // [5000, 10000, ...]
         return view('dashboard', compact(
             'totalmenus',
             'monthlymenus',
@@ -114,99 +122,10 @@ class DashboardController extends Controller
             'topItemsData',
             'ratingsLabels',
             'ratingsCounts',
-            'monthlyInvoices'
+            'monthlyInvoices',
+            'sales',
+            'salesLabels',
+            'salesData'
         ));
     }
-    // public function index()
-    // {
-    //     $totalmenus = FoodMenu::count();
-
-    //     $monthlymenus = FoodMonthPrice::whereMonth('date', Carbon::now()->month)
-    //         ->whereYear('date', Carbon::now()->year)
-    //         ->distinct('food_id')
-    //         ->count('food_id');
-
-    //     $monthlyavailable = FoodMonthPrice::whereMonth('date', Carbon::now()->month)
-    //         ->whereYear('date', Carbon::now()->year)
-    //         ->count();
-
-    //     $monthlyorders = RegisteredOrder::whereMonth('date', Carbon::now()->month)
-    //         ->whereYear('date', Carbon::now()->year)
-    //         ->count();
-
-    //     $totalemployees = Employee::count();
-
-    //     $recentOrders = RegisteredOrder::whereMonth('date', Carbon::now()->month)
-    //         ->whereYear('date', Carbon::now()->year)
-    //         ->orderBy('date', 'desc')
-    //         ->take(5)
-    //         ->get();
-
-    //     $totalCheckout = Attendance::whereMonth('date', Carbon::now()->month)
-    //         ->whereYear('date', Carbon::now()->year)
-    //         ->where('check_out', true)
-    //         ->count();
-
-    //     // Line Chart: Daily Sales for last 14 days
-    //     $dailySalesRaw = FoodMonthPrice::selectRaw("DATE(date) as day, SUM(price) as total")
-    //         ->whereBetween('date', [now()->subDays(13)->startOfDay(), now()->endOfDay()])
-    //         ->groupBy('day')
-    //         ->orderBy('day')
-    //         ->pluck('total', 'day')
-    //         ->toArray();
-
-    //     $dailyLabels = [];
-    //     $dailySales = [];
-    //     for ($i = 13; $i >= 0; $i--) {
-    //         $day = now()->subDays($i)->toDateString();
-    //         $dailyLabels[] = $day;
-    //         $dailySales[] = $dailySalesRaw[$day] ?? 0;
-    //     }
-
-    //     // Bar Chart: Top Selling Items (only current year, no soft deleted)
-    //     $results = DB::table('registered_order as ro')
-    //         ->join('foodmonthprice as fmp', 'ro.date', '=', 'fmp.date')
-    //         ->whereNull('fmp.deleted_at')
-    //         ->whereNull('ro.deleted_at')
-    //         ->whereYear('ro.date', now()->year)
-    //         ->select('fmp.food_name', DB::raw('COUNT(ro.date) as total'))
-    //         ->groupBy('fmp.food_name')
-    //         ->pluck('total', 'fmp.food_name');
-
-    //     $topItemsLabels = array_keys($results->toArray());
-    //     $topItemsData = array_values($results->toArray());
-
-    //     // Pie Chart: Feedback Ratings Distribution
-    //     $ratingsData = Feedback::selectRaw('rating, COUNT(*) as count')
-    //         ->groupBy('rating')
-    //         ->orderBy('rating')
-    //         ->pluck('count', 'rating')
-    //         ->toArray();
-
-    //     $ratingsLabels = array_keys($ratingsData);
-    //     $ratingsCounts = array_values($ratingsData);
-
-    //     // Monthly invoices with pagination (20 per page)
-    //     $monthlyInvoices = Invoice::with('employee')
-    //         ->orderByDesc('year')
-    //         ->orderByDesc('month')
-    //         ->paginate(20);
-
-    //     return view('dashboard', compact(
-    //         'totalmenus',
-    //         'monthlymenus',
-    //         'monthlyavailable',
-    //         'monthlyorders',
-    //         'totalemployees',
-    //         'recentOrders',
-    //         'totalCheckout',
-    //         'dailyLabels',
-    //         'dailySales',
-    //         'topItemsLabels',
-    //         'topItemsData',
-    //         'ratingsLabels',
-    //         'ratingsCounts',
-    //         'monthlyInvoices'
-    //     ));
-    // }
 }

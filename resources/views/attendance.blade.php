@@ -40,7 +40,7 @@
   </div>
 </div>
 
-
+<div class="container-fluid px-4 mt-4">
     <!-- Attendance Table -->
     @if($attendanceList->isEmpty())
     <div class="alert alert-warning text-center" role="alert">
@@ -85,5 +85,5 @@
     </div>
     @endif
 </div>
-
+</div>
 @endsection
