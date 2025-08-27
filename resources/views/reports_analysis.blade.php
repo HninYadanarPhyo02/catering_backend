@@ -116,7 +116,9 @@
             datasets: [{
                 label: 'Sales',
                 data: salesData,
-                backgroundColor: 'rgba(42, 157, 143, 0.8)'
+                backgroundColor: '#42A5F5',
+                barPercentage: 1,      // width of each bar (0-1)
+            categoryPercentage: 0.6  // space between bars
             }]
         },
         options: commonOptions
@@ -130,8 +132,8 @@
             datasets: [{
                 label: 'Active Users',
                 data: engagementData,
-                borderColor: 'rgba(231, 111, 81, 0.8)',
-                backgroundColor: 'rgba(231, 111, 81, 0.2)',
+                borderColor: '#FFA726',
+                backgroundColor: 'rgba(236, 179, 93, 0.71)',
                 fill: true,
                 tension: 0.3
             }]
@@ -147,8 +149,9 @@
             datasets: [{
                 label: 'Items Sold',
                 data: topSellingData,
-                backgroundColor: 'rgba(244, 162, 97, 0.8)',
-                borderRadius: 6
+                backgroundColor: '#FFA726',
+                barPercentage: 0.9,      // width of each bar (0-1)
+            categoryPercentage: 0.6  // space between bars
             }]
         },
         options: {
@@ -166,13 +169,13 @@
                 {
                     label: 'Registered Orders',
                     data: monthlyRegisteredData,
-                    backgroundColor: 'rgba(42, 157, 143, 0.8)',
+                    backgroundColor: '#42A5F5',
                     borderRadius: 4
                 },
                 {
                     label: 'Attendance',
                     data: monthlyAttendanceData.map(val => val ?? 0),
-                    backgroundColor: 'rgba(231, 111, 81, 0.8)',
+                    backgroundColor: '#66BB6A',
                     borderRadius: 4
                 }
             ]

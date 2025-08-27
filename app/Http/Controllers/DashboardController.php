@@ -66,18 +66,21 @@ class DashboardController extends Controller
         $currentYear = Carbon::now()->year;
 
         $results = DB::table('registered_order as ro')
-            ->join('attendance as att', function ($join) {
-                $join->on('ro.emp_id', '=', 'att.emp_id')->on('ro.date', '=', 'att.date');
-            })
-            ->join('foodmonthprice as fmp', 'ro.date', '=', 'fmp.date')
-            ->whereNull('ro.deleted_at')
-            ->whereNull('att.deleted_at')
-            ->whereNull('fmp.deleted_at')
-            ->whereYear('ro.date', $currentYear)
-            ->whereMonth('ro.date', $currentMonth)
-            ->select('fmp.food_name', DB::raw('COUNT(*) as total'))
-            ->groupBy('fmp.food_name')
-            ->pluck('total', 'fmp.food_name');
+    ->join('attendance as att', function ($join) {
+        $join->on('ro.emp_id', '=', 'att.emp_id')->on('ro.date', '=', 'att.date');
+    })
+    ->join('foodmonthprice as fmp', 'ro.date', '=', 'fmp.date')
+    ->whereNull('ro.deleted_at')
+    ->whereNull('att.deleted_at')
+    ->whereNull('fmp.deleted_at')
+    ->whereYear('ro.date', $currentYear)
+    ->whereMonth('ro.date', $currentMonth)
+    ->select('fmp.food_name', DB::raw('COUNT(*) as total'))
+    ->groupBy('fmp.food_name')
+    ->orderByDesc('total') // sort by sold quantity
+    ->limit(7)             // take only top 7
+    ->pluck('total', 'fmp.food_name');
+
 
 
         $topItemsLabels = array_keys($results->toArray());

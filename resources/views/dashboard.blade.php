@@ -182,7 +182,7 @@ new Chart(document.getElementById('salesChart'), {
                 label: 'Total Sales (MMK)',
                 data: salesData,
                 borderColor: '#FFA726',
-                backgroundColor: 'rgba(255, 167, 38, 0.2)',
+                backgroundColor: 'rgba(236, 179, 93, 0.71)',
                 tension: 0.3,
                 fill: true
             }]
@@ -218,22 +218,30 @@ new Chart(document.getElementById('topItemsChart'), {
         datasets: [{
             label: 'Items Sold',
             data: topItemsData,
-            backgroundColor: '#EF5350'
+            backgroundColor: topItemsData.map((_, i) => {
+                const palette = ['#EF5350','#f3d00bff','#FFA726','#66BB6A','#42A5F5','#ff4dffff'];
+                return palette[i % palette.length];
+            }),
+            barPercentage: 0.8,      // width of each bar (0-1)
+            categoryPercentage: 0.6  // space between bars
         }]
     },
     options: {
         responsive: true,
-        plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true },
-                x: {
-            ticks: {
-                maxRotation: 50, // rotate labels
-                minRotation: 45,
-                autoSkip: false
+        plugins: { 
+            legend: { display: false },
+            tooltip: { enabled: true }
+        },
+        scales: { 
+            y: { beginAtZero: true },
+            x: {
+                ticks: { maxRotation: 50, minRotation: 45, autoSkip: false },
+                offset: true
             }
-        }}
+        }
     }
 });
+
 
 new Chart(document.getElementById('ratingsChart'), {
     type: 'pie',
@@ -241,7 +249,7 @@ new Chart(document.getElementById('ratingsChart'), {
         labels: ratingsLabels.map(r => r + ' Star'),
         datasets: [{
             data: ratingsCounts,
-            backgroundColor: ['#EF5350','#FFB74D','#FFA726','#66BB6A','#42A5F5']
+            backgroundColor: ['#EF5350','#f3d00bff','#FFA726','#66BB6A','#42A5F5','#ff4dffff']
         }]
     },
     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#000' } } } , radius: '95%'}
