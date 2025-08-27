@@ -20,7 +20,7 @@
         }
 
         .login-container {
-            background-color: #f39f20ff; 
+            background-color: #ec5800; 
             padding: 50px;
             border-radius: 10px;
             box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
@@ -65,7 +65,7 @@
                 <label for="password" class="form-label" style="color:dark">Password</label>
               <input type="password" class="form-control form-control-lg bg-light fs-6 @error('password') is-invalid @enderror" name="password" placeholder="Password">
                 @error('password')
-                    <div class="is-invalid mb-1"><span class="text-danger">User's Email and Password does not match.</span></div>
+                    <div class="is-invalid mb-1"><span class="text-white">User's Email and Password does not match.</span></div>
                 @enderror           
              </div>
                 <div class="input-group mb-4 d-flex justify-content-between">

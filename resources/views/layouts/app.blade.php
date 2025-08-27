@@ -20,7 +20,7 @@
             height: 100vh;
             position: fixed;
             width: 255px;
-            background-color: #FFA726;
+            background-color: #FF8f00;
             color: #ffffff;
             overflow-y: auto;
             scrollbar-width: thin;
@@ -43,8 +43,9 @@
         }
 
         .sidebar a:hover {
-            background-color: #FF9800;
-            color: black;
+            
+            background-color: #cf7c00ff;
+            color: white;
         }
 
         .content {
