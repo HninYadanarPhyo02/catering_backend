@@ -261,3 +261,14 @@
     });
 </script>
 @endsection
+<style>
+    .badge-employee {
+        background-color: #2A9D8F;
+        color: white;
+    }
+
+    .badge-admin {
+        background-color: #264653;
+        color: white;
+    }
+</style>

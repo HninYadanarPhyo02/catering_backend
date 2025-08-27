@@ -50,9 +50,9 @@
 </div>
 <div class="container-fluid px-3 mt-4">
     @if($announcements->isEmpty())
-        <div class="alert alert-warning shadow-sm rounded text-center">
-            <i class="bi bi-exclamation-circle me-2"></i> No announcements found.
-        </div>
+    <div class="alert alert-warning shadow-sm rounded text-center">
+        <i class="bi bi-exclamation-circle me-2"></i> No announcements found.
+    </div>
     @else
         <div class="table-responsive shadow-sm rounded">
             <table class="table table-hover align-middle mb-0">

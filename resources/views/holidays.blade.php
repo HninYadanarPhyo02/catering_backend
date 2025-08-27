@@ -116,7 +116,13 @@
                 <li class="page-item disabled">
                     <span class="page-link rounded-pill border-0 text-muted" style="background-color: #E0E0E0;">&laquo;</span>
                 </li>
+                <li class="page-item disabled">
+                    <span class="page-link rounded-pill border-0 text-muted" style="background-color: #E0E0E0;">&laquo;</span>
+                </li>
                 @else
+                <li class="page-item">
+                    <a class="page-link rounded-pill border-0 text-white" href="{{ $holidays->previousPageUrl() }}" style="background-color: #2A9D8F;">&laquo;</a>
+                </li>
                 <li class="page-item">
                     <a class="page-link rounded-pill border-0 text-white" href="{{ $holidays->previousPageUrl() }}" style="background-color: #2A9D8F;">&laquo;</a>
                 </li>
@@ -133,6 +139,15 @@
                     <a class="page-link rounded-pill border-0 text-dark" href="{{ $url }}" style="background-color: #E9F7F6;">{{ $page }}</a>
                 </li>
                 @endif
+                @if ($page == $holidays->currentPage())
+                <li class="page-item active">
+                    <span class="page-link rounded-pill border-0 text-white" style="background-color: #264653;">{{ $page }}</span>
+                </li>
+                @else
+                <li class="page-item">
+                    <a class="page-link rounded-pill border-0 text-dark" href="{{ $url }}" style="background-color: #E9F7F6;">{{ $page }}</a>
+                </li>
+                @endif
                 @endforeach
 
                 {{-- Next Page --}}
@@ -140,7 +155,13 @@
                 <li class="page-item">
                     <a class="page-link rounded-pill border-0 text-white" href="{{ $holidays->nextPageUrl() }}" style="background-color: #2A9D8F;">&raquo;</a>
                 </li>
+                <li class="page-item">
+                    <a class="page-link rounded-pill border-0 text-white" href="{{ $holidays->nextPageUrl() }}" style="background-color: #2A9D8F;">&raquo;</a>
+                </li>
                 @else
+                <li class="page-item disabled">
+                    <span class="page-link rounded-pill border-0 text-muted" style="background-color: #E0E0E0;">&raquo;</span>
+                </li>
                 <li class="page-item disabled">
                     <span class="page-link rounded-pill border-0 text-muted" style="background-color: #E0E0E0;">&raquo;</span>
                 </li>

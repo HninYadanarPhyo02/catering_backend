@@ -4,11 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Holiday;
 use App\Models\Invoice;
+use App\Models\Invoice;
 use App\Models\Attendance;
 use Illuminate\Http\Request;
 use App\Models\InvoiceDetail;
+use App\Models\InvoiceDetail;
 use App\Models\FoodMonthPrice;
 use App\Models\RegisteredOrder;
+use Carbon\Carbon;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -18,13 +21,21 @@ class HolidaysController extends Controller
     {
         $now = Carbon::now();
         $holidaysCount = Holiday::whereYear('date', $now->year)->count();
+        $now = Carbon::now();
+        $holidaysCount = Holiday::whereYear('date', $now->year)->count();
         $holidays = Holiday::orderBy('created_at', 'desc')->paginate(4);
+        return view('holidays', compact('holidays', 'holidaysCount'));
         return view('holidays', compact('holidays', 'holidaysCount'));
     }
     // public function store(Request $request)
     // {
     //     // Step 1: Generate new h_id
+    //     // Step 1: Generate new h_id
     //     $lastHoliday = Holiday::orderByRaw("CAST(SUBSTRING(h_id, 6) AS UNSIGNED) DESC")->first();
+    //     $lastIdNum = $lastHoliday ? intval(substr($lastHoliday->h_id, 5)) : 0;
+    //     $newhId = 'holi_' . str_pad($lastIdNum + 1, 3, '0', STR_PAD_LEFT);
+
+    //     // Step 2: Validate form input
     //     $lastIdNum = $lastHoliday ? intval(substr($lastHoliday->h_id, 5)) : 0;
     //     $newhId = 'holi_' . str_pad($lastIdNum + 1, 3, '0', STR_PAD_LEFT);
 
@@ -38,12 +49,30 @@ class HolidaysController extends Controller
     //     $date = $validated['date'];
 
     //     // Step 3: Create the holiday record
+    //     $date = $validated['date'];
+
+    //     // Step 3: Create the holiday record
     //     Holiday::create([
     //         'h_id' => $newhId,
     //         'name' => $validated['name'],
     //         'date' => $date,
     //         'description' => $validated['description'] ?? null,
+    //         'name' => $validated['name'],
+    //         'date' => $date,
+    //         'description' => $validated['description'] ?? null,
     //     ]);
+
+    //     // Step 4: Delete related data on the same date
+    //     RegisteredOrder::whereDate('date', $date)->delete();
+    //     Attendance::whereDate('date', $date)->delete();
+    //     FoodMonthPrice::whereDate('date', $date)->delete();
+    //     InvoiceDetail::whereDate('date', $date)->delete(); // ← Fixed here
+
+    //     // Optional: delete Feedback if related to date
+    //     // Feedback::whereDate('created_at', $date)->delete();
+
+    //     // Step 5: Redirect with success message
+    //     return redirect()->back()->with('success', 'Holiday added and related records deleted successfully.');
 
     //     // Step 4: Delete related data on the same date
     //     RegisteredOrder::whereDate('date', $date)->delete();
