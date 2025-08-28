@@ -20,7 +20,7 @@ class HolidaysController extends Controller
         $holidaysCount = Holiday::whereYear('date', $now->year)->count();
         $now = Carbon::now();
         $holidaysCount = Holiday::whereYear('date', $now->year)->count();
-        $holidays = Holiday::orderBy('created_at', 'desc')->paginate(4);
+        $holidays = Holiday::orderBy('created_at', 'desc')->paginate(10);
         return view('holidays', compact('holidays', 'holidaysCount'));
         return view('holidays', compact('holidays', 'holidaysCount'));
     }

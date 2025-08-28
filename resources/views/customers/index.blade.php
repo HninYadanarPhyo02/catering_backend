@@ -115,18 +115,21 @@
                             <td>
                                 @if($customer->emp_id !== 'admin_01')
                                 <!-- Edit Button -->
-                                <a href="javascript:void(0);" 
-   class="btn btn-sm text-white px-3" 
-   style="background-color: #E6A503;" 
-   data-bs-toggle="modal"
-   data-bs-target="#editCustomerModal"
-   data-id="{{ $customer->emp_id }}"
-   data-name="{{ $customer->name }}"
-   data-email="{{ $customer->email }}"
-   data-role="{{ $customer->role }}"
-   title="Edit {{ $customer->name }}">
-    <i class="fas fa-edit me-1"></i>
-</a>
+                            <button
+                            type="button"
+                            class="btn btn-sm btn-edit-customer text-white px-3" 
+                            style="background-color: #E6A503;"
+                            title="Edit Holiday"
+                            aria-label="Edit holiday {{ $customer->name }}"
+                            data-bs-toggle="modal"
+                            data-bs-target="#editCustomerModal"
+                            data-id="{{ $customer->emp_id }}"
+                            data-name="{{ $customer->name }}"
+                            data-email="{{ $customer->email }}"
+                            data-role="{{ $customer->role }}"
+                        >
+                            <i class="fas fa-edit me-1"></i>
+                        </button>
 
 
                                 <!-- Delete Form -->
@@ -205,7 +208,7 @@
 <div class="modal fade" id="editCustomerModal" tabindex="-1" aria-labelledby="editCustomerModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content border-0 shadow">
-            <div class="modal-header text-white" style="background-color: #264653;">
+            <div class="modal-header text-white" style="background-color: #e76f51;">
                 <h5 class="modal-title" id="editCustomerModalLabel"><i class="fas fa-edit me-2"></i> Edit Employee Info</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>

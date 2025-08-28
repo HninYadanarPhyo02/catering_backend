@@ -126,11 +126,6 @@ class CustomersController extends Controller
             'email' => 'required|email|unique:employee,email,' . $employee->id,
             'role'  => 'required|in:admin,employee',
         ]);
-        $validated = $request->validate([
-            'name'  => 'required|string|max:255',
-            'email' => 'required|email|unique:employee,email,' . $employee->id,
-            'role'  => 'required|in:admin,employee',
-        ]);
 
         $newRole = $validated['role'];
         $roleChanged = $newRole !== $employee->role;
@@ -142,19 +137,6 @@ class CustomersController extends Controller
             'email' => $validated['email'],
             'role'  => $newRole,
         ];
-        $updateData = [
-            'name'  => $validated['name'],
-            'email' => $validated['email'],
-            'role'  => $newRole,
-        ];
-
-        if ($roleChanged) {
-            // Delete related records if changing from employee to admin
-            if ($employee->role === 'employee' && $newRole === 'admin') {
-                DB::table('attendance')->where('emp_id', $employee->emp_id)->delete();
-                DB::table('registered_order')->where('emp_id', $employee->emp_id)->delete();
-                DB::table('feedback')->where('emp_id', $employee->emp_id)->delete();
-            }
         if ($roleChanged) {
             // Delete related records if changing from employee to admin
             if ($employee->role === 'employee' && $newRole === 'admin') {
@@ -194,7 +176,6 @@ class CustomersController extends Controller
     }
 
 
-        }
 
     public function destroy($emp_id)
     {
